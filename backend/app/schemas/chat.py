@@ -43,6 +43,12 @@ class ChatResponse(BaseModel):
     answer: str
     citations: list[CitationResponse]
     evidence_found: bool
+    query_type: str
+    classification_confidence: float
+    matched_decisions: list[dict]
+    timeline_event_count: int
+    graph_node_count: int
+    document_result_count: int
 
 
 class MessageResponse(BaseModel):

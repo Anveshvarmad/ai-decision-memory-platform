@@ -17,7 +17,7 @@ settings = get_settings()
 
 app = FastAPI(
     title=settings.project_name,
-    version="0.8.0",
+    version="0.9.0",
     description="Organizational decision intelligence and RAG platform",
 )
 
@@ -47,7 +47,7 @@ app.include_router(graph_router, prefix="/api")
 def root() -> dict[str, str]:
     return {
         "message": settings.project_name,
-        "version": "0.8.0",
+        "version": "0.9.0",
         "docs": "/docs",
         "health": "/api/health",
     }

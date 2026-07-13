@@ -26,3 +26,6 @@ conversation-detail.json
 decisions.json
 decision-detail.json
 graph.json
+
+# Decision-aware RAG test outputs
+decision-aware-*.json

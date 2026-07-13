@@ -81,7 +81,7 @@ def chat_with_workspace(
     database.add(user_message)
     database.flush()
 
-    answer, citations, evidence_found = answer_question(
+    result = answer_question(
         database=database,
         workspace_id=workspace_id,
         question=chat_data.question,
@@ -91,18 +91,43 @@ def chat_with_workspace(
 
     citation_payload = [
         citation.model_dump(mode="json")
-        for citation in citations
+        for citation in result.citations
+    ]
+
+    matched_decision_payload = [
+        decision.model_dump(mode="json")
+        for decision in result.matched_decisions
     ]
 
     assistant_message = Message(
         conversation_id=conversation.id,
         role="assistant",
-        content=answer,
+        content=result.answer,
         citations=citation_payload,
         metadata_json={
-            "evidence_found": evidence_found,
+            "evidence_found": result.evidence_found,
             "retrieval_limit": chat_data.limit,
-            "minimum_similarity": chat_data.minimum_similarity,
+            "minimum_similarity": (
+                chat_data.minimum_similarity
+            ),
+            "query_type": (
+                result.classification.query_type
+            ),
+            "classification_confidence": (
+                result.classification.confidence
+            ),
+            "matched_decisions": (
+                matched_decision_payload
+            ),
+            "timeline_event_count": (
+                result.timeline_event_count
+            ),
+            "graph_node_count": (
+                result.graph_node_count
+            ),
+            "document_result_count": (
+                result.document_result_count
+            ),
         },
     )
 
@@ -114,9 +139,27 @@ def chat_with_workspace(
         conversation_id=conversation.id,
         message_id=assistant_message.id,
         question=chat_data.question,
-        answer=answer,
-        citations=citations,
-        evidence_found=evidence_found,
+        answer=result.answer,
+        citations=result.citations,
+        evidence_found=result.evidence_found,
+        query_type=(
+            result.classification.query_type
+        ),
+        classification_confidence=(
+            result.classification.confidence
+        ),
+        matched_decisions=(
+            matched_decision_payload
+        ),
+        timeline_event_count=(
+            result.timeline_event_count
+        ),
+        graph_node_count=(
+            result.graph_node_count
+        ),
+        document_result_count=(
+            result.document_result_count
+        ),
     )
 
 

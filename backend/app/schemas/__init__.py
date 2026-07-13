@@ -56,3 +56,9 @@ from app.schemas.graph import (
     GraphRelationshipResponse,
     WorkspaceGraphResponse,
 )
+
+from app.schemas.decision_query import (
+    DecisionAwareChatMetadata,
+    DecisionQueryClassification,
+    RelatedDecisionResponse,
+)
