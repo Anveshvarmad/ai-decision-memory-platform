@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
+from app.api.decisions import router as decision_router
 from app.api.documents import router as document_router
 from app.api.health import router as health_router
 from app.api.search import router as search_router
@@ -14,7 +15,7 @@ settings = get_settings()
 
 app = FastAPI(
     title=settings.project_name,
-    version="0.5.0",
+    version="0.6.0",
     description="Organizational decision intelligence and RAG platform",
 )
 
@@ -35,13 +36,14 @@ app.include_router(workspace_router, prefix="/api")
 app.include_router(document_router, prefix="/api")
 app.include_router(search_router, prefix="/api")
 app.include_router(chat_router, prefix="/api")
+app.include_router(decision_router, prefix="/api")
 
 
 @app.get("/")
 def root() -> dict[str, str]:
     return {
         "message": settings.project_name,
-        "version": "0.5.0",
+        "version": "0.6.0",
         "docs": "/docs",
         "health": "/api/health",
     }

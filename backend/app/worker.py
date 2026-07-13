@@ -9,7 +9,10 @@ celery_app = Celery(
     "decision_memory",
     broker=settings.celery_broker_url,
     backend=settings.celery_result_backend,
-    include=["app.tasks.document_tasks"],
+    include=[
+        "app.tasks.document_tasks",
+        "app.tasks.decision_tasks",
+    ],
 )
 
 celery_app.conf.update(

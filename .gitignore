@@ -23,3 +23,5 @@ htmlcov/
 *-response.json
 conversations.json
 conversation-detail.json
+decisions.json
+decision-detail.json

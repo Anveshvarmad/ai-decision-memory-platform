@@ -30,3 +30,13 @@ from app.schemas.chat import (
     ConversationResponse,
     MessageResponse,
 )
+
+from app.schemas.decision import (
+    DecisionDetailResponse,
+    DecisionEvidenceResponse,
+    DecisionExtractionResponse,
+    DecisionResponse,
+    DecisionReviewRequest,
+    DecisionStatsResponse,
+    DecisionUpdateRequest,
+)
