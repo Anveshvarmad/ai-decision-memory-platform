@@ -5,11 +5,18 @@ import type {
   ChatResponse,
   Conversation,
   ConversationDetail,
+  Decision,
+  DecisionDetail,
   DecisionExtractionResponse,
+  DecisionStats,
+  DecisionStatus,
+  DecisionTimeline,
+  DecisionUpdateRequest,
   DocumentDetail,
   DocumentRecord,
   DocumentRetryResponse,
   DocumentUploadResponse,
+  TimelineGenerationResponse,
   User,
   Workspace,
   WorkspaceCreateRequest,
@@ -236,6 +243,105 @@ export function deleteConversation(
     `/workspaces/${workspaceId}/conversations/${conversationId}`,
     {
       method: "DELETE",
+    },
+  );
+}
+
+export function getDecisions(
+  workspaceId: string,
+  status?: DecisionStatus | "all",
+  minimumConfidence = 0,
+): Promise<Decision[]> {
+  const params = new URLSearchParams();
+
+  if (status && status !== "all") {
+    params.set("decision_status", status);
+  }
+
+  params.set(
+    "minimum_confidence",
+    String(minimumConfidence),
+  );
+
+  return request<Decision[]>(
+    `/workspaces/${workspaceId}/decisions?${params.toString()}`,
+  );
+}
+
+export function getDecisionStats(
+  workspaceId: string,
+): Promise<DecisionStats> {
+  return request<DecisionStats>(
+    `/workspaces/${workspaceId}/decisions/stats`,
+  );
+}
+
+export function getDecision(
+  workspaceId: string,
+  decisionId: string,
+): Promise<DecisionDetail> {
+  return request<DecisionDetail>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}`,
+  );
+}
+
+export function updateDecision(
+  workspaceId: string,
+  decisionId: string,
+  payload: DecisionUpdateRequest,
+): Promise<Decision> {
+  return request<Decision>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export function reviewDecision(
+  workspaceId: string,
+  decisionId: string,
+  status: DecisionStatus,
+): Promise<Decision> {
+  return request<Decision>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/review`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ status }),
+    },
+  );
+}
+
+export function deleteDecision(
+  workspaceId: string,
+  decisionId: string,
+): Promise<void> {
+  return request<void>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}`,
+    {
+      method: "DELETE",
+    },
+  );
+}
+
+export function getDecisionTimeline(
+  workspaceId: string,
+  decisionId: string,
+): Promise<DecisionTimeline> {
+  return request<DecisionTimeline>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/timeline`,
+  );
+}
+
+export function generateDecisionTimeline(
+  workspaceId: string,
+  decisionId: string,
+): Promise<TimelineGenerationResponse> {
+  return request<TimelineGenerationResponse>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/generate-timeline`,
+    {
+      method: "POST",
     },
   );
 }

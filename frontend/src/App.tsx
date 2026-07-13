@@ -9,6 +9,7 @@ import { AppLayout } from "./layouts/AppLayout";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
 import { ChatPage } from "./pages/ChatPage";
+import { DecisionsPage } from "./pages/DecisionsPage";
 import { LoginPage } from "./pages/LoginPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 
@@ -42,12 +43,7 @@ export default function App() {
 
           <Route
             path="decisions"
-            element={
-              <PlaceholderPage
-                title="Decision Explorer"
-                description="Review extracted decisions, evidence, alternatives, status, and confidence."
-              />
-            }
+            element={<DecisionsPage />}
           />
 
           <Route

@@ -134,3 +134,88 @@ export interface ConversationMessage {
 export interface ConversationDetail extends Conversation {
   messages: ConversationMessage[];
 }
+
+export type DecisionStatus =
+  | "candidate"
+  | "approved"
+  | "rejected";
+
+export interface Decision {
+  id: string;
+  workspace_id: string;
+  title: string;
+  summary: string | null;
+  decision_statement: string;
+  reason: string | null;
+  alternatives: string[];
+  participants: string[];
+  related_entities: string[];
+  status: DecisionStatus;
+  confidence_score: number;
+  decision_date: string | null;
+  reviewed_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DecisionEvidence {
+  id: string;
+  chunk_id: string;
+  evidence_type: string;
+  relevance_score: number;
+  explanation: string | null;
+  document_id: string;
+  document_name: string;
+  chunk_index: number;
+  content: string;
+  page_number: number | null;
+  section_title: string | null;
+}
+
+export interface DecisionDetail extends Decision {
+  evidence: DecisionEvidence[];
+}
+
+export interface DecisionStats {
+  total: number;
+  candidates: number;
+  approved: number;
+  rejected: number;
+  average_confidence: number;
+}
+
+export interface DecisionUpdateRequest {
+  title?: string;
+  summary?: string | null;
+  decision_statement?: string;
+  reason?: string | null;
+  alternatives?: string[];
+  participants?: string[];
+  related_entities?: string[];
+  decision_date?: string | null;
+}
+
+export interface DecisionEvent {
+  id: string;
+  decision_id: string;
+  event_type: string;
+  title: string;
+  description: string | null;
+  event_date: string | null;
+  source_reference: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DecisionTimeline {
+  decision_id: string;
+  decision_title: string;
+  event_count: number;
+  events: DecisionEvent[];
+}
+
+export interface TimelineGenerationResponse {
+  decision_id: string;
+  status: string;
+  task_id: string;
+}
