@@ -1,6 +1,7 @@
 import {
   BrainCircuit,
   FileStack,
+  Sparkles,
   GitBranch,
   LayoutDashboard,
   LogOut,
@@ -32,6 +33,11 @@ const navigation = [
     path: "/app/chat",
     label: "Decision Chat",
     icon: MessageSquareText,
+  },
+  {
+    path: "/app/intelligence",
+    label: "Intelligence",
+    icon: Sparkles,
   },
   {
     path: "/app/decisions",

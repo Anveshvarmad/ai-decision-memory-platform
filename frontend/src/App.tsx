@@ -11,6 +11,7 @@ import { DocumentsPage } from "./pages/DocumentsPage";
 import { ChatPage } from "./pages/ChatPage";
 import { DecisionsPage } from "./pages/DecisionsPage";
 import { GraphPage } from "./pages/GraphPage";
+import { IntelligencePage } from "./pages/IntelligencePage";
 import { LoginPage } from "./pages/LoginPage";
 
 export default function App() {
@@ -39,6 +40,11 @@ export default function App() {
           <Route
             path="chat"
             element={<ChatPage />}
+          />
+
+          <Route
+            path="intelligence"
+            element={<IntelligencePage />}
           />
 
           <Route

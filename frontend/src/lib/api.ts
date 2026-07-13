@@ -8,6 +8,8 @@ import type {
   Decision,
   DecisionDetail,
   DecisionExtractionResponse,
+  DecisionReasoningRequest,
+  DecisionReasoningResponse,
   DecisionStats,
   DecisionStatus,
   DecisionTimeline,
@@ -398,3 +400,17 @@ export function clearWorkspaceGraph(
     },
   );
 }
+
+export function generateDecisionReasoning(
+  workspaceId: string,
+  payload: DecisionReasoningRequest,
+): Promise<DecisionReasoningResponse> {
+  return request<DecisionReasoningResponse>(
+    `/workspaces/${workspaceId}/context/reason`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
