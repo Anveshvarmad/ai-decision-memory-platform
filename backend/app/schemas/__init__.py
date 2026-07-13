@@ -94,3 +94,11 @@ from app.schemas.context import (
     ClaimCitationGroup,
     ReasoningClaim,
 )
+
+from app.schemas.comparison import (
+    ComparisonClaim,
+    DecisionComparisonRequest,
+    DecisionComparisonResponse,
+    DecisionComparisonResult,
+    DecisionComparisonSnapshot,
+)

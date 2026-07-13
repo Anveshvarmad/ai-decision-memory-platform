@@ -6,6 +6,8 @@ import type {
   Conversation,
   ConversationDetail,
   Decision,
+  DecisionComparisonResponse,
+  DecisionComparisonRequest,
   DecisionDetail,
   DecisionExtractionResponse,
   DecisionReasoningRequest,
@@ -414,3 +416,16 @@ export function generateDecisionReasoning(
   );
 }
 
+
+export function compareDecisions(
+  workspaceId: string,
+  payload: DecisionComparisonRequest,
+): Promise<DecisionComparisonResponse> {
+  return request<DecisionComparisonResponse>(
+    `/workspaces/${workspaceId}/decision-comparison`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    },
+  );
+}

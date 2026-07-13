@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
 from app.api.context import router as context_router
+from app.api.comparison import router as comparison_router
 from app.api.decisions import router as decision_router
 from app.api.documents import router as document_router
 from app.api.graph import router as graph_router
@@ -40,6 +41,7 @@ app.include_router(document_router, prefix="/api")
 app.include_router(search_router, prefix="/api")
 app.include_router(chat_router, prefix="/api")
 app.include_router(context_router, prefix="/api")
+app.include_router(comparison_router, prefix="/api")
 app.include_router(decision_router, prefix="/api")
 app.include_router(timeline_router, prefix="/api")
 app.include_router(graph_router, prefix="/api")

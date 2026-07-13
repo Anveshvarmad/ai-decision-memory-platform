@@ -3,6 +3,7 @@ import {
   FileStack,
   Sparkles,
   GitBranch,
+  GitCompare,
   LayoutDashboard,
   LogOut,
   MessageSquareText,
@@ -38,6 +39,11 @@ const navigation = [
     path: "/app/intelligence",
     label: "Intelligence",
     icon: Sparkles,
+  },
+  {
+    path: "/app/comparison",
+    label: "Compare",
+    icon: GitCompare,
   },
   {
     path: "/app/decisions",

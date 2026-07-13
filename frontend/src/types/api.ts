@@ -361,3 +361,64 @@ export interface CitationCoverage {
   unsupported_claims: number;
   coverage_ratio: number;
 }
+
+export interface ComparisonClaim {
+  text: string;
+  source_ids: string[];
+  supported: boolean;
+}
+
+export interface DecisionComparisonSnapshot {
+  decision_id: string;
+  title: string;
+  status: string;
+  summary: string | null;
+  decision_statement: string;
+  reason: string | null;
+  alternatives: unknown[];
+  participants: unknown[];
+  related_entities: unknown[];
+  confidence_score: number;
+  decision_date: string | null;
+  evidence_count: number;
+  timeline_event_count: number;
+}
+
+export interface DecisionComparisonResult {
+  executive_summary: string;
+  comparison_answer: string;
+  preferred_decision_id: string | null;
+  preference_reason: string | null;
+  similarities: ComparisonClaim[];
+  differences: ComparisonClaim[];
+  changed_reasons: ComparisonClaim[];
+  changed_alternatives: ComparisonClaim[];
+  changed_stakeholders: ComparisonClaim[];
+  changed_risks: ComparisonClaim[];
+  changed_impacts: ComparisonClaim[];
+  conflicts: ComparisonClaim[];
+  uncertainties: ComparisonClaim[];
+  confidence: number;
+  source_ids: string[];
+}
+
+export interface DecisionComparisonRequest {
+  decision_a_id: string;
+  decision_b_id: string;
+  question?: string;
+  evidence_limit?: number;
+  timeline_limit?: number;
+}
+
+export interface DecisionComparisonResponse {
+  question: string;
+  decision_a: DecisionComparisonSnapshot;
+  decision_b: DecisionComparisonSnapshot;
+  result: DecisionComparisonResult;
+  citations: ReasoningCitation[];
+  model: string;
+  total_sources: number;
+  supported_claims: number;
+  unsupported_claims: number;
+  citation_coverage: number;
+}
