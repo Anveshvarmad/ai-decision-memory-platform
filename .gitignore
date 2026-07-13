@@ -29,3 +29,6 @@ graph.json
 
 # Decision-aware RAG test outputs
 decision-aware-*.json
+
+# Frontend environment
+frontend/.env
