@@ -15,6 +15,8 @@ import {
   type FormEvent,
 } from "react";
 
+import { useNavigate } from "react-router";
+
 import {
   createWorkspace,
   getWorkspaces,
@@ -28,6 +30,8 @@ import {
 } from "../lib/workspace";
 
 export function DashboardPage() {
+  const navigate = useNavigate();
+
   const [workspaces, setWorkspaces] =
     useState<Workspace[]>([]);
 
@@ -357,6 +361,9 @@ export function DashboardPage() {
           <button
             className="primary-button"
             type="button"
+            onClick={() =>
+              navigate("/app/chat")
+            }
           >
             Open decision chat
             <ArrowUpRight size={17} />

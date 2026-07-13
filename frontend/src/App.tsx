@@ -8,6 +8,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AppLayout } from "./layouts/AppLayout";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
+import { ChatPage } from "./pages/ChatPage";
 import { LoginPage } from "./pages/LoginPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 
@@ -36,12 +37,7 @@ export default function App() {
 
           <Route
             path="chat"
-            element={
-              <PlaceholderPage
-                title="Decision Chat"
-                description="Ask why, who, when, status, impact, and relationship questions."
-              />
-            }
+            element={<ChatPage />}
           />
 
           <Route

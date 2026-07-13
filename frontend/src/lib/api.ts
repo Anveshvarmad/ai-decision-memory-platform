@@ -1,6 +1,10 @@
 import type {
   ApiError,
   AuthResponse,
+  ChatRequest,
+  ChatResponse,
+  Conversation,
+  ConversationDetail,
   DecisionExtractionResponse,
   DocumentDetail,
   DocumentRecord,
@@ -190,6 +194,48 @@ export function extractDocumentDecisions(
     `/workspaces/${workspaceId}/documents/${documentId}/extract-decisions`,
     {
       method: "POST",
+    },
+  );
+}
+
+export function sendChatMessage(
+  workspaceId: string,
+  payload: ChatRequest,
+): Promise<ChatResponse> {
+  return request<ChatResponse>(
+    `/workspaces/${workspaceId}/chat`,
+    {
+      method: "POST",
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export function getConversations(
+  workspaceId: string,
+): Promise<Conversation[]> {
+  return request<Conversation[]>(
+    `/workspaces/${workspaceId}/conversations`,
+  );
+}
+
+export function getConversation(
+  workspaceId: string,
+  conversationId: string,
+): Promise<ConversationDetail> {
+  return request<ConversationDetail>(
+    `/workspaces/${workspaceId}/conversations/${conversationId}`,
+  );
+}
+
+export function deleteConversation(
+  workspaceId: string,
+  conversationId: string,
+): Promise<void> {
+  return request<void>(
+    `/workspaces/${workspaceId}/conversations/${conversationId}`,
+    {
+      method: "DELETE",
     },
   );
 }

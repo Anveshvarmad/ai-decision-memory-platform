@@ -71,3 +71,66 @@ export interface DecisionExtractionResponse {
   status: string;
   task_id: string;
 }
+
+export interface Citation {
+  citation_number: number;
+  chunk_id: string;
+  document_id: string;
+  document_name: string;
+  page_number: number | null;
+  section_title: string | null;
+  excerpt: string;
+  similarity: number;
+}
+
+export interface MatchedDecision {
+  decision_id: string;
+  title: string;
+  status: string;
+  confidence_score: number;
+  relevance_score: number;
+}
+
+export interface ChatRequest {
+  question: string;
+  conversation_id?: string;
+  limit?: number;
+  minimum_similarity?: number;
+}
+
+export interface ChatResponse {
+  conversation_id: string;
+  message_id: string;
+  question: string;
+  answer: string;
+  citations: Citation[];
+  evidence_found: boolean;
+  query_type: string;
+  classification_confidence: number;
+  matched_decisions: MatchedDecision[];
+  timeline_event_count: number;
+  graph_node_count: number;
+  document_result_count: number;
+}
+
+export interface Conversation {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConversationMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  citations: Citation[];
+  metadata_json: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface ConversationDetail extends Conversation {
+  messages: ConversationMessage[];
+}
