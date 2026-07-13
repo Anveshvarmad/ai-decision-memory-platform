@@ -35,3 +35,6 @@ frontend/.env
 
 # Context aggregation test output
 aggregated-context.json
+
+# Ranked context test output
+ranked-context.json

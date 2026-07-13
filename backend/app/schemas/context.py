@@ -135,3 +135,62 @@ class AggregatedContextResponse(BaseModel):
 
     source_counts: ContextSourceCounts
     evidence_found: bool
+
+
+class RankedContextItem(BaseModel):
+    source_id: str
+    source_type: str
+    title: str
+    content: str
+
+    score: float
+    token_estimate: int
+
+    decision_id: uuid.UUID | None = None
+    document_id: uuid.UUID | None = None
+    chunk_id: uuid.UUID | None = None
+
+    metadata: dict[str, Any] = Field(
+        default_factory=dict
+    )
+
+    score_components: dict[str, float] = Field(
+        default_factory=dict
+    )
+
+
+class ContextRankingRequest(ContextQueryRequest):
+    token_budget: int = Field(
+        default=6000,
+        ge=500,
+        le=30000,
+    )
+
+    maximum_items: int = Field(
+        default=30,
+        ge=1,
+        le=100,
+    )
+
+    deduplication_threshold: float = Field(
+        default=0.88,
+        ge=0.5,
+        le=1.0,
+    )
+
+
+class RankedContextResponse(BaseModel):
+    query: str
+    query_type: str
+    classification_confidence: float
+
+    ranked_items: list[RankedContextItem]
+
+    total_candidates: int
+    selected_items: int
+    estimated_tokens: int
+    token_budget: int
+    removed_duplicates: int
+
+    source_counts: ContextSourceCounts
+    evidence_found: bool
