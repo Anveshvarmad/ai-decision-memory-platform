@@ -121,7 +121,7 @@ def calculate_decision_relevance(
         + phrase_bonus
     )
 
-    if decision.status == "approved":
+    if score > 0 and decision.status == "approved":
         score += 0.05
 
     return round(

@@ -48,7 +48,7 @@ services:
     ports:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
-      - ./backend/app:/app/app
+      - ./backend:/app
       - ./backend/alembic:/app/alembic
       - ./backend/alembic.ini:/app/alembic.ini
       - ./data:/app/data
@@ -60,6 +60,9 @@ services:
       redis:
         condition: service_healthy
 
+    working_dir: /app
+    environment:
+      PYTHONPATH: /app
   worker:
     build:
       context: ./backend
@@ -78,7 +81,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./backend/app:/app/app
+      - ./backend:/app
       - ./data:/app/data
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -89,6 +92,9 @@ services:
         condition: service_healthy
 
 
+    working_dir: /app
+    environment:
+      PYTHONPATH: /app
   frontend:
     build:
       context: ./frontend
