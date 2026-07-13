@@ -36,12 +36,19 @@ import {
   getActiveWorkspaceId,
 } from "../lib/workspace";
 
+import {
+  LiveDocumentProgress,
+} from "../components/LiveDocumentProgress";
+
+import {
+  useDocumentProcessingStream,
+} from "../hooks/useDocumentProcessingStream";
+
 import type {
   DocumentRecord,
   DocumentStatus,
 } from "../types/api";
 
-const POLL_INTERVAL_MS = 3000;
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) {
@@ -99,16 +106,6 @@ function getStatusLabel(
   };
 
   return labels[status];
-}
-
-function hasActiveProcessing(
-  documents: DocumentRecord[],
-): boolean {
-  return documents.some((document) =>
-    ["pending", "processing", "embedding"].includes(
-      document.status,
-    ),
-  );
 }
 
 export function DocumentsPage() {
@@ -204,26 +201,6 @@ export function DocumentsPage() {
     };
   }, []);
 
-  useEffect(() => {
-    if (
-      !workspaceId ||
-      !hasActiveProcessing(documents)
-    ) {
-      return;
-    }
-
-    const interval = window.setInterval(() => {
-      void loadDocuments();
-    }, POLL_INTERVAL_MS);
-
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, [
-    workspaceId,
-    documents,
-    loadDocuments,
-  ]);
 
   async function handleFiles(files: FileList | File[]) {
     if (!workspaceId) {
@@ -462,6 +439,60 @@ export function DocumentsPage() {
     );
   }
 
+  const activeProcessingDocument =
+    documents.find((document) =>
+      [
+        "pending",
+        "queued",
+        "processing",
+        "extracting",
+        "chunking",
+        "embedding",
+        "indexing",
+        "detecting_decisions",
+        "building_graph",
+        "building_timeline",
+      ].includes(document.status),
+    ) ?? null;
+
+  const {
+    event: liveProcessingEvent,
+    connected: liveProcessingConnected,
+    error: liveProcessingError,
+  } = useDocumentProcessingStream({
+    workspaceId: workspaceId,
+    documentId:
+      activeProcessingDocument?.id ?? null,
+    enabled: Boolean(
+      activeProcessingDocument,
+    ),
+    onCompleted: () => {
+      void loadDocuments();
+    },
+  });
+
+  useEffect(() => {
+    if (!liveProcessingEvent) {
+      return;
+    }
+
+    setDocuments((currentDocuments) =>
+      currentDocuments.map((document) =>
+        document.id ===
+        liveProcessingEvent.document_id
+          ? {
+              ...document,
+              status:
+                liveProcessingEvent.status as DocumentRecord["status"],
+              processing_progress:
+                liveProcessingEvent.progress,
+            }
+          : document,
+      ),
+    );
+  }, [liveProcessingEvent]);
+
+
   return (
     <div className="page documents-page">
       <header className="page-header">
@@ -510,6 +541,25 @@ export function DocumentsPage() {
           onChange={handleFileInput}
         />
       </header>
+
+      {liveProcessingEvent && (
+        <LiveDocumentProgress
+          event={liveProcessingEvent}
+          connected={
+            liveProcessingConnected
+          }
+        />
+      )}
+
+      {liveProcessingError && (
+        <div className="page-error">
+          <span>
+            Live updates disconnected:{" "}
+            {liveProcessingError}
+          </span>
+        </div>
+      )}
+
 
       {error && (
         <div className="page-error">

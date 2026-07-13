@@ -102,3 +102,7 @@ from app.schemas.comparison import (
     DecisionComparisonResult,
     DecisionComparisonSnapshot,
 )
+
+from app.schemas.processing import (
+    DocumentProcessingEvent,
+)

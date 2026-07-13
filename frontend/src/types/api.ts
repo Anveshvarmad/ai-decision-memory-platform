@@ -422,3 +422,17 @@ export interface DecisionComparisonResponse {
   unsupported_claims: number;
   citation_coverage: number;
 }
+
+export interface DocumentProcessingEvent {
+  event_type: string;
+  document_id: string;
+  workspace_id: string;
+  status: string;
+  progress: number;
+  stage: string;
+  message: string;
+  chunk_count: number | null;
+  error_message: string | null;
+  terminal: boolean;
+  timestamp: string;
+}
