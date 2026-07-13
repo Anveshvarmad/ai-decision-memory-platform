@@ -31,6 +31,7 @@ import {
   useReactFlow,
   type Edge,
   type Node,
+  type OnNodeDrag,
 } from "@xyflow/react";
 
 import "@xyflow/react/dist/style.css";
@@ -58,6 +59,19 @@ import {
   KnowledgeGraphNode,
   type KnowledgeGraphNodeData,
 } from "../components/KnowledgeGraphNode";
+
+import {
+  GraphLayoutToolbar,
+} from "../components/GraphLayoutToolbar";
+
+import {
+  applyGraphLayout,
+  applySavedPositions,
+  clearGraphPositions,
+  loadGraphPositions,
+  saveGraphPositions,
+  type GraphLayoutMode,
+} from "../lib/graphLayout";
 
 import type {
   Decision,
@@ -199,32 +213,71 @@ function convertEdges(
 
 function GraphCanvas({
   graph,
+  workspaceId,
   selectedNode,
   onSelectNode,
+  onPositionsSaved,
+  onPositionsReset,
 }: {
   graph: WorkspaceGraph;
+  workspaceId: string;
   selectedNode: GraphNode | null;
   onSelectNode: (
     node: GraphNode,
   ) => void;
+  onPositionsSaved: () => void;
+  onPositionsReset: () => void;
 }) {
   const { fitView } = useReactFlow();
-
-  const convertedNodes = useMemo(
-    () => convertNodes(graph.nodes),
-    [graph.nodes],
-  );
 
   const convertedEdges = useMemo(
     () => convertEdges(graph.edges),
     [graph.edges],
   );
 
+  const convertedNodes = useMemo(() => {
+    const baseNodes =
+      convertNodes(graph.nodes);
+
+    const savedPositions =
+      loadGraphPositions(workspaceId);
+
+    if (
+      Object.keys(savedPositions).length > 0
+    ) {
+      return applySavedPositions(
+        baseNodes,
+        savedPositions,
+      );
+    }
+
+    return applyGraphLayout(
+      baseNodes,
+      convertedEdges,
+      "hierarchical",
+    );
+  }, [
+    graph.nodes,
+    convertedEdges,
+    workspaceId,
+  ]);
+
   const [nodes, setNodes, onNodesChange] =
     useNodesState(convertedNodes);
 
   const [edges, setEdges, onEdgesChange] =
     useEdgesState(convertedEdges);
+
+  const [layoutMode, setLayoutMode] =
+    useState<GraphLayoutMode>(() => {
+      const savedPositions =
+        loadGraphPositions(workspaceId);
+
+      return Object.keys(savedPositions)
+        .length > 0
+        ? "custom"
+        : "hierarchical";
+    });
 
   useEffect(() => {
     setNodes(convertedNodes);
@@ -257,6 +310,62 @@ function GraphCanvas({
     );
   }, [selectedNode, setNodes]);
 
+  function handleLayoutChange(
+    mode: GraphLayoutMode,
+  ) {
+    const layouted = applyGraphLayout(
+      nodes,
+      edges,
+      mode,
+    );
+
+    setNodes(layouted);
+    setLayoutMode(mode);
+
+    window.setTimeout(() => {
+      void fitView({
+        padding: 0.2,
+        duration: 500,
+      });
+    }, 50);
+  }
+
+  function handleSavePositions() {
+    saveGraphPositions(
+      workspaceId,
+      nodes,
+    );
+
+    setLayoutMode("custom");
+    onPositionsSaved();
+  }
+
+  function handleResetPositions() {
+    clearGraphPositions(workspaceId);
+
+    const resetNodes = applyGraphLayout(
+      convertNodes(graph.nodes),
+      convertedEdges,
+      "hierarchical",
+    );
+
+    setNodes(resetNodes);
+    setLayoutMode("hierarchical");
+    onPositionsReset();
+
+    window.setTimeout(() => {
+      void fitView({
+        padding: 0.2,
+        duration: 500,
+      });
+    }, 50);
+  }
+
+  const handleNodeDragStop:
+    OnNodeDrag = () => {
+      setLayoutMode("custom");
+    };
+
   return (
     <ReactFlow
       nodes={nodes}
@@ -264,6 +373,9 @@ function GraphCanvas({
       nodeTypes={nodeTypes}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
+      onNodeDragStop={
+        handleNodeDragStop
+      }
       onNodeClick={(_, node) => {
         const graphNode =
           graph.nodes.find(
@@ -304,6 +416,22 @@ function GraphCanvas({
         position="bottom-right"
         nodeStrokeWidth={3}
       />
+
+      <Panel
+        position="top-left"
+        className="graph-layout-panel"
+      >
+        <GraphLayoutToolbar
+          layoutMode={layoutMode}
+          onLayoutChange={
+            handleLayoutChange
+          }
+          onSave={handleSavePositions}
+          onReset={
+            handleResetPositions
+          }
+        />
+      </Panel>
 
       <Panel
         position="top-right"
@@ -566,6 +694,8 @@ export function GraphPage() {
         nodes: [],
         edges: [],
       });
+
+      clearGraphPositions(workspaceId);
 
       setSelectedNode(null);
       setNeighborGraph(null);
@@ -852,6 +982,26 @@ export function GraphPage() {
         </div>
       </section>
 
+      <section className="graph-cluster-legend">
+        {[
+          "decision",
+          "person",
+          "technology",
+          "service",
+          "incident",
+          "document",
+          "project",
+          "concept",
+        ].map((entityType) => (
+          <span key={entityType}>
+            <i
+              className={`entity-cluster-dot ${entityType}`}
+            />
+            {entityType}
+          </span>
+        ))}
+      </section>
+
       <section className="interactive-graph-layout">
         <div className="interactive-graph-canvas">
           {loading ? (
@@ -876,9 +1026,20 @@ export function GraphPage() {
             <ReactFlowProvider>
               <GraphCanvas
                 graph={visibleGraph}
+                workspaceId={workspaceId}
                 selectedNode={selectedNode}
                 onSelectNode={(node) =>
                   void selectNode(node)
+                }
+                onPositionsSaved={() =>
+                  setNotice(
+                    "Graph positions saved for this workspace.",
+                  )
+                }
+                onPositionsReset={() =>
+                  setNotice(
+                    "Saved positions cleared and layout reset.",
+                  )
                 }
               />
             </ReactFlowProvider>

@@ -4213,3 +4213,170 @@ code {
     display: none;
   }
 }
+
+.graph-layout-panel {
+  max-width: calc(100% - 120px);
+}
+
+.graph-layout-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid #303548;
+  border-radius: 11px;
+  background: rgba(14, 18, 28, 0.94);
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.24);
+}
+
+.graph-layout-options,
+.graph-layout-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.graph-layout-actions {
+  padding-left: 8px;
+  border-left: 1px solid #303548;
+}
+
+.graph-layout-toolbar button {
+  display: inline-flex;
+  min-height: 31px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #7b8398;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.graph-layout-toolbar button:hover {
+  background: #1b2030;
+  color: #b5bbcb;
+}
+
+.graph-layout-toolbar button.active {
+  border-color:
+    rgba(113, 98, 213, 0.35);
+  background:
+    rgba(98, 84, 192, 0.17);
+  color: #b6abf5;
+}
+
+.graph-cluster-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px 13px;
+  border: 1px solid #282d3e;
+  border-radius: 12px;
+  background: rgba(14, 18, 28, 0.82);
+}
+
+.graph-cluster-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #757d92;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.entity-cluster-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #8173df;
+}
+
+.entity-cluster-dot.decision {
+  background: #8173df;
+}
+
+.entity-cluster-dot.person {
+  background: #4e9bc1;
+}
+
+.entity-cluster-dot.technology {
+  background: #4bb07e;
+}
+
+.entity-cluster-dot.service {
+  background: #7580a8;
+}
+
+.entity-cluster-dot.incident {
+  background: #c35f70;
+}
+
+.entity-cluster-dot.document {
+  background: #ba9252;
+}
+
+.entity-cluster-dot.project {
+  background: #9a6dca;
+}
+
+.entity-cluster-dot.concept {
+  background: #6f7b91;
+}
+
+.interactive-node-content > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+@media (max-width: 800px) {
+  .graph-layout-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .graph-layout-actions {
+    padding-top: 6px;
+    padding-left: 0;
+    border-top: 1px solid #303548;
+    border-left: 0;
+  }
+
+  .graph-layout-toolbar button {
+    padding: 0 7px;
+  }
+}
+
+@media (max-width: 580px) {
+  .graph-layout-panel {
+    max-width: 78%;
+  }
+
+  .graph-layout-options {
+    display: grid;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+  }
+
+  .graph-layout-toolbar button {
+    justify-content: center;
+  }
+
+  .graph-layout-toolbar button {
+    font-size: 0;
+  }
+
+  .graph-layout-toolbar button svg {
+    width: 15px;
+    height: 15px;
+  }
+}

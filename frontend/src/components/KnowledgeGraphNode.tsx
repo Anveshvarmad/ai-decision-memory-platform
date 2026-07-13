@@ -80,7 +80,13 @@ export function KnowledgeGraphNode({
 
       <div className="interactive-node-content">
         <strong>{nodeData.label}</strong>
-        <span>{nodeData.entityType}</span>
+
+        <span>
+          <i
+            className={`entity-cluster-dot ${nodeData.entityType}`}
+          />
+          {nodeData.entityType}
+        </span>
       </div>
 
       <Handle
