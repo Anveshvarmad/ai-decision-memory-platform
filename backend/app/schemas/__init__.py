@@ -79,3 +79,12 @@ from app.schemas.context import (
     RankedContextItem,
     RankedContextResponse,
 )
+
+from app.schemas.context import (
+    DecisionReasoningRequest,
+    DecisionReasoningResponse,
+    DecisionReasoningResult,
+    ReasoningCitation,
+    ReasoningTimelineItem,
+    RelatedDecisionItem,
+)

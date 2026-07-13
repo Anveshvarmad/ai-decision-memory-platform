@@ -194,3 +194,114 @@ class RankedContextResponse(BaseModel):
 
     source_counts: ContextSourceCounts
     evidence_found: bool
+
+
+class ReasoningCitation(BaseModel):
+    citation_number: int
+    source_id: str
+    source_type: str
+    title: str
+
+    document_id: uuid.UUID | None = None
+    chunk_id: uuid.UUID | None = None
+    decision_id: uuid.UUID | None = None
+
+    document_name: str | None = None
+    page_number: int | None = None
+    section_title: str | None = None
+
+    excerpt: str
+    score: float
+
+
+class ReasoningTimelineItem(BaseModel):
+    date: str | None
+    title: str
+    description: str | None
+    source_ids: list[str] = Field(
+        default_factory=list
+    )
+
+
+class RelatedDecisionItem(BaseModel):
+    decision_id: uuid.UUID | None = None
+    title: str
+    relationship: str | None = None
+    status: str | None = None
+    source_ids: list[str] = Field(
+        default_factory=list
+    )
+
+
+class DecisionReasoningResult(BaseModel):
+    answer: str
+    summary: str
+
+    decision_title: str | None = None
+    decision_status: str | None = None
+    decision_date: str | None = None
+
+    confidence: float = Field(
+        ge=0.0,
+        le=1.0,
+    )
+
+    reasons: list[str] = Field(
+        default_factory=list
+    )
+
+    alternatives: list[str] = Field(
+        default_factory=list
+    )
+
+    stakeholders: list[str] = Field(
+        default_factory=list
+    )
+
+    risks: list[str] = Field(
+        default_factory=list
+    )
+
+    impacts: list[str] = Field(
+        default_factory=list
+    )
+
+    timeline: list[ReasoningTimelineItem] = Field(
+        default_factory=list
+    )
+
+    related_decisions: list[
+        RelatedDecisionItem
+    ] = Field(
+        default_factory=list
+    )
+
+    uncertainties: list[str] = Field(
+        default_factory=list
+    )
+
+    source_ids: list[str] = Field(
+        default_factory=list
+    )
+
+
+class DecisionReasoningRequest(
+    ContextRankingRequest
+):
+    include_raw_context: bool = False
+
+
+class DecisionReasoningResponse(BaseModel):
+    query: str
+    query_type: str
+
+    result: DecisionReasoningResult
+    citations: list[ReasoningCitation]
+
+    selected_context_items: int
+    estimated_context_tokens: int
+    model: str
+
+    raw_context: list[
+        RankedContextItem
+    ] | None = None
