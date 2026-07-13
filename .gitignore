@@ -18,3 +18,8 @@ data/uploads/*
 *.log
 coverage.xml
 htmlcov/
+
+# Local API test responses
+*-response.json
+conversations.json
+conversation-detail.json

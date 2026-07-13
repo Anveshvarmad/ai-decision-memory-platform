@@ -21,3 +21,12 @@ from app.schemas.search import (
     SemanticSearchResponse,
     SemanticSearchResult,
 )
+
+from app.schemas.chat import (
+    ChatRequest,
+    ChatResponse,
+    CitationResponse,
+    ConversationDetailResponse,
+    ConversationResponse,
+    MessageResponse,
+)
