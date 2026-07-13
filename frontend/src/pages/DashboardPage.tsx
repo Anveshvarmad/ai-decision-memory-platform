@@ -1,16 +1,22 @@
 import {
+  AlertCircle,
   ArrowUpRight,
   BrainCircuit,
+  CheckCircle2,
   FileText,
   GitBranch,
+  LoaderCircle,
   MessageSquareText,
   Network,
   Plus,
+  RefreshCw,
   Search,
 } from "lucide-react";
 
 import {
+  useCallback,
   useEffect,
+  useMemo,
   useState,
   type FormEvent,
 } from "react";
@@ -19,15 +25,61 @@ import { useNavigate } from "react-router";
 
 import {
   createWorkspace,
+  getConversations,
+  getDecisions,
+  getDecisionStats,
+  getDocuments,
   getWorkspaces,
+  getWorkspaceGraph,
 } from "../lib/api";
-
-import type { Workspace } from "../types/api";
 
 import {
   ACTIVE_WORKSPACE_KEY,
   setActiveWorkspaceId,
 } from "../lib/workspace";
+
+import type {
+  Conversation,
+  Decision,
+  DecisionStats,
+  DocumentRecord,
+  Workspace,
+  WorkspaceGraph,
+} from "../types/api";
+
+function formatDate(value: string | null): string {
+  if (!value) {
+    return "Unknown date";
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+  }).format(new Date(value));
+}
+
+function formatConfidence(value: number): string {
+  return `${Math.round(value * 100)}%`;
+}
+
+function statusLabel(status: string): string {
+  if (status === "completed") {
+    return "Ready";
+  }
+
+  if (status === "embedding") {
+    return "Embedding";
+  }
+
+  if (status === "processing") {
+    return "Extracting";
+  }
+
+  if (status === "pending") {
+    return "Queued";
+  }
+
+  return "Failed";
+}
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -40,6 +92,24 @@ export function DashboardPage() {
       localStorage.getItem(ACTIVE_WORKSPACE_KEY),
     );
 
+  const [documents, setDocuments] =
+    useState<DocumentRecord[]>([]);
+
+  const [decisions, setDecisions] =
+    useState<Decision[]>([]);
+
+  const [decisionStats, setDecisionStats] =
+    useState<DecisionStats | null>(null);
+
+  const [conversations, setConversations] =
+    useState<Conversation[]>([]);
+
+  const [graph, setGraph] =
+    useState<WorkspaceGraph>({
+      nodes: [],
+      edges: [],
+    });
+
   const [newWorkspaceName, setNewWorkspaceName] =
     useState("");
 
@@ -47,35 +117,156 @@ export function DashboardPage() {
     useState(false);
 
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] =
+    useState(false);
 
   const [error, setError] =
     useState<string | null>(null);
-
-  useEffect(() => {
-    getWorkspaces()
-      .then((data) => {
-        setWorkspaces(data);
-
-        if (!selectedWorkspace && data[0]) {
-          selectWorkspace(data[0].id);
-        }
-      })
-      .catch((requestError) => {
-        setError(
-          requestError instanceof Error
-            ? requestError.message
-            : "Unable to load workspaces",
-        );
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
 
   function selectWorkspace(id: string) {
     setSelectedWorkspace(id);
     setActiveWorkspaceId(id);
   }
+
+  const loadWorkspaceData = useCallback(
+    async (
+      workspaceId: string,
+      showLoader = false,
+    ) => {
+      if (showLoader) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
+
+      try {
+        const [
+          documentData,
+          decisionData,
+          statsData,
+          conversationData,
+          graphData,
+        ] = await Promise.all([
+          getDocuments(workspaceId),
+          getDecisions(workspaceId, "all", 0),
+          getDecisionStats(workspaceId),
+          getConversations(workspaceId),
+          getWorkspaceGraph(workspaceId),
+        ]);
+
+        setDocuments(documentData);
+        setDecisions(decisionData);
+        setDecisionStats(statsData);
+        setConversations(conversationData);
+        setGraph(graphData);
+        setError(null);
+      } catch (requestError) {
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : "Unable to load dashboard data",
+        );
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    async function initializeDashboard() {
+      setLoading(true);
+
+      try {
+        const workspaceData =
+          await getWorkspaces();
+
+        setWorkspaces(workspaceData);
+
+        let workspaceId =
+          selectedWorkspace;
+
+        const selectedStillExists =
+          workspaceData.some(
+            (workspace) =>
+              workspace.id === workspaceId,
+          );
+
+        if (
+          !workspaceId ||
+          !selectedStillExists
+        ) {
+          workspaceId =
+            workspaceData[0]?.id ?? null;
+        }
+
+        if (workspaceId) {
+          selectWorkspace(workspaceId);
+
+          await loadWorkspaceData(
+            workspaceId,
+            false,
+          );
+        } else {
+          setLoading(false);
+        }
+      } catch (requestError) {
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : "Unable to initialize dashboard",
+        );
+
+        setLoading(false);
+      }
+    }
+
+    void initializeDashboard();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedWorkspace) {
+      return;
+    }
+
+    void loadWorkspaceData(
+      selectedWorkspace,
+      true,
+    );
+  }, [selectedWorkspace, loadWorkspaceData]);
+
+  useEffect(() => {
+    const activeDocuments = documents.some(
+      (document) =>
+        [
+          "pending",
+          "processing",
+          "embedding",
+        ].includes(document.status),
+    );
+
+    if (
+      !selectedWorkspace ||
+      !activeDocuments
+    ) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      void loadWorkspaceData(
+        selectedWorkspace,
+      );
+    }, 4000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [
+    documents,
+    selectedWorkspace,
+    loadWorkspaceData,
+  ]);
 
   async function handleCreateWorkspace(
     event: FormEvent<HTMLFormElement>,
@@ -115,6 +306,53 @@ export function DashboardPage() {
       workspace.id === selectedWorkspace,
   );
 
+  const completedDocuments =
+    documents.filter(
+      (document) =>
+        document.status === "completed",
+    ).length;
+
+  const processingDocuments =
+    documents.filter((document) =>
+      [
+        "pending",
+        "processing",
+        "embedding",
+      ].includes(document.status),
+    );
+
+  const recentDecisions = useMemo(
+    () =>
+      [...decisions]
+        .sort(
+          (left, right) =>
+            new Date(
+              right.updated_at,
+            ).getTime() -
+            new Date(
+              left.updated_at,
+            ).getTime(),
+        )
+        .slice(0, 3),
+    [decisions],
+  );
+
+  const recentDocuments = useMemo(
+    () =>
+      [...documents]
+        .sort(
+          (left, right) =>
+            new Date(
+              right.updated_at,
+            ).getTime() -
+            new Date(
+              left.updated_at,
+            ).getTime(),
+        )
+        .slice(0, 4),
+    [documents],
+  );
+
   return (
     <div className="page dashboard-page">
       <header className="page-header">
@@ -134,22 +372,60 @@ export function DashboardPage() {
           </p>
         </div>
 
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() =>
-            setShowCreateForm(
-              (current) => !current,
-            )
-          }
-        >
-          <Plus size={18} />
-          New workspace
-        </button>
+        <div className="dashboard-header-actions">
+          <button
+            type="button"
+            className="secondary-button"
+            disabled={
+              refreshing ||
+              !selectedWorkspace
+            }
+            onClick={() => {
+              if (selectedWorkspace) {
+                void loadWorkspaceData(
+                  selectedWorkspace,
+                );
+              }
+            }}
+          >
+            {refreshing ? (
+              <LoaderCircle
+                size={17}
+                className="spin"
+              />
+            ) : (
+              <RefreshCw size={17} />
+            )}
+            Refresh
+          </button>
+
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() =>
+              setShowCreateForm(
+                (current) => !current,
+              )
+            }
+          >
+            <Plus size={18} />
+            New workspace
+          </button>
+        </div>
       </header>
 
       {error && (
-        <div className="page-error">{error}</div>
+        <div className="page-error">
+          <AlertCircle size={17} />
+          <span>{error}</span>
+
+          <button
+            type="button"
+            onClick={() => setError(null)}
+          >
+            ×
+          </button>
+        </div>
       )}
 
       {showCreateForm && (
@@ -159,6 +435,7 @@ export function DashboardPage() {
         >
           <div>
             <strong>Create a workspace</strong>
+
             <p>
               Workspaces isolate documents,
               decisions, members, and conversations.
@@ -190,186 +467,418 @@ export function DashboardPage() {
         <div className="section-heading">
           <div>
             <h2>Workspaces</h2>
-            <p>Select your active knowledge space.</p>
+            <p>
+              Select your active knowledge space.
+            </p>
           </div>
         </div>
 
         <div className="workspace-list">
-          {loading && (
-            <div className="muted-card">
-              Loading workspaces...
-            </div>
-          )}
+          {workspaces.length === 0 &&
+            !loading && (
+              <div className="muted-card">
+                No workspace exists yet.
+              </div>
+            )}
 
-          {!loading &&
-            workspaces.map((workspace) => (
-              <button
-                key={workspace.id}
-                type="button"
-                className={
-                  workspace.id ===
-                  selectedWorkspace
-                    ? "workspace-pill active"
-                    : "workspace-pill"
-                }
-                onClick={() =>
-                  selectWorkspace(workspace.id)
-                }
-              >
-                <span className="workspace-icon">
-                  {workspace.name
-                    .slice(0, 1)
-                    .toUpperCase()}
-                </span>
+          {workspaces.map((workspace) => (
+            <button
+              key={workspace.id}
+              type="button"
+              className={
+                workspace.id ===
+                selectedWorkspace
+                  ? "workspace-pill active"
+                  : "workspace-pill"
+              }
+              onClick={() =>
+                selectWorkspace(workspace.id)
+              }
+            >
+              <span className="workspace-icon">
+                {workspace.name
+                  .slice(0, 1)
+                  .toUpperCase()}
+              </span>
 
-                <span>
-                  <strong>{workspace.name}</strong>
-                  <small>
-                    {workspace.role ?? "member"}
-                  </small>
-                </span>
-              </button>
-            ))}
+              <span>
+                <strong>
+                  {workspace.name}
+                </strong>
+
+                <small>
+                  {workspace.role ?? "member"}
+                </small>
+              </span>
+            </button>
+          ))}
         </div>
       </section>
 
-      <section className="stat-grid">
-        <article className="stat-card">
-          <div className="stat-icon">
-            <FileText size={21} />
-          </div>
-          <span>Indexed documents</span>
-          <strong>1</strong>
-          <small>Ready for retrieval</small>
-        </article>
+      {loading ? (
+        <div className="dashboard-loading">
+          <LoaderCircle
+            size={24}
+            className="spin"
+          />
+          Loading workspace intelligence...
+        </div>
+      ) : (
+        <>
+          <section className="stat-grid">
+            <button
+              type="button"
+              className="stat-card dashboard-stat-button"
+              onClick={() =>
+                navigate("/app/documents")
+              }
+            >
+              <div className="stat-icon">
+                <FileText size={21} />
+              </div>
 
-        <article className="stat-card">
-          <div className="stat-icon">
-            <GitBranch size={21} />
-          </div>
-          <span>Extracted decisions</span>
-          <strong>1</strong>
-          <small>1 approved</small>
-        </article>
+              <span>Indexed documents</span>
+              <strong>
+                {completedDocuments}
+              </strong>
 
-        <article className="stat-card">
-          <div className="stat-icon">
-            <Network size={21} />
-          </div>
-          <span>Connected entities</span>
-          <strong>7</strong>
-          <small>People, systems, and evidence</small>
-        </article>
-
-        <article className="stat-card">
-          <div className="stat-icon">
-            <MessageSquareText size={21} />
-          </div>
-          <span>Decision conversations</span>
-          <strong>4</strong>
-          <small>Grounded in evidence</small>
-        </article>
-      </section>
-
-      <section className="dashboard-grid">
-        <article className="panel recent-decision">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">
-                Recent decision
-              </p>
-              <h2>
-                MongoDB to PostgreSQL migration
-              </h2>
-            </div>
+              <small>
+                {processingDocuments.length > 0
+                  ? `${processingDocuments.length} processing`
+                  : `${documents.length} total documents`}
+              </small>
+            </button>
 
             <button
               type="button"
-              className="icon-button"
+              className="stat-card dashboard-stat-button"
+              onClick={() =>
+                navigate("/app/decisions")
+              }
             >
-              <ArrowUpRight size={19} />
+              <div className="stat-icon">
+                <GitBranch size={21} />
+              </div>
+
+              <span>Extracted decisions</span>
+
+              <strong>
+                {decisionStats?.total ?? 0}
+              </strong>
+
+              <small>
+                {decisionStats?.candidates ?? 0}{" "}
+                waiting for review
+              </small>
             </button>
-          </div>
 
-          <p>
-            The order-management service will move
-            to PostgreSQL to improve transactional
-            consistency and reporting performance.
-          </p>
+            <button
+              type="button"
+              className="stat-card dashboard-stat-button"
+              onClick={() =>
+                navigate("/app/graph")
+              }
+            >
+              <div className="stat-icon">
+                <Network size={21} />
+              </div>
 
-          <div className="decision-meta">
-            <span className="status-badge approved">
-              Approved
-            </span>
+              <span>Connected entities</span>
 
-            <span>Confidence 94%</span>
-            <span>March 18, 2026</span>
-          </div>
+              <strong>
+                {graph.nodes.length}
+              </strong>
 
-          <div className="timeline-preview">
-            <div>
-              <span />
-              <strong>Incident detected</strong>
-              <small>March 4</small>
-            </div>
+              <small>
+                {graph.edges.length} relationships
+              </small>
+            </button>
 
-            <div>
-              <span />
-              <strong>Options reviewed</strong>
-              <small>March 18</small>
-            </div>
+            <button
+              type="button"
+              className="stat-card dashboard-stat-button"
+              onClick={() =>
+                navigate("/app/chat")
+              }
+            >
+              <div className="stat-icon">
+                <MessageSquareText
+                  size={21}
+                />
+              </div>
 
-            <div>
-              <span />
-              <strong>Migration approved</strong>
-              <small>March 18</small>
-            </div>
+              <span>
+                Decision conversations
+              </span>
 
-            <div>
-              <span />
-              <strong>Target rollout</strong>
-              <small>April 15</small>
-            </div>
-          </div>
-        </article>
+              <strong>
+                {conversations.length}
+              </strong>
 
-        <article className="panel ask-card">
-          <div className="ask-icon">
-            <BrainCircuit size={26} />
-          </div>
+              <small>
+                Grounded in workspace evidence
+              </small>
+            </button>
+          </section>
 
-          <p className="eyebrow">
-            Ask decision memory
-          </p>
+          <section className="dashboard-main-grid">
+            <article className="panel dashboard-recent-panel">
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">
+                    Recent decisions
+                  </p>
 
-          <h2>
-            What do you need to understand?
-          </h2>
+                  <h2>
+                    Organizational decision memory
+                  </h2>
+                </div>
 
-          <p>
-            Search decisions, source evidence,
-            people, incidents, and timelines.
-          </p>
+                <button
+                  type="button"
+                  className="icon-button"
+                  title="Open decisions"
+                  onClick={() =>
+                    navigate("/app/decisions")
+                  }
+                >
+                  <ArrowUpRight size={18} />
+                </button>
+              </div>
 
-          <div className="search-preview">
-            <Search size={18} />
-            <span>
-              Why did we migrate to PostgreSQL?
-            </span>
-          </div>
+              {recentDecisions.length === 0 ? (
+                <div className="dashboard-empty">
+                  <GitBranch size={29} />
 
-          <button
-            className="primary-button"
-            type="button"
-            onClick={() =>
-              navigate("/app/chat")
-            }
-          >
-            Open decision chat
-            <ArrowUpRight size={17} />
-          </button>
-        </article>
-      </section>
+                  <p>
+                    No decisions have been
+                    extracted yet.
+                  </p>
+
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() =>
+                      navigate("/app/documents")
+                    }
+                  >
+                    Upload documents
+                  </button>
+                </div>
+              ) : (
+                <div className="dashboard-decision-list">
+                  {recentDecisions.map(
+                    (decision) => (
+                      <button
+                        key={decision.id}
+                        type="button"
+                        className="dashboard-decision-row"
+                        onClick={() =>
+                          navigate(
+                            "/app/decisions",
+                          )
+                        }
+                      >
+                        <div>
+                          <span
+                            className={`status-badge ${decision.status}`}
+                          >
+                            {decision.status}
+                          </span>
+
+                          <strong>
+                            {decision.title}
+                          </strong>
+
+                          <p>
+                            {decision.summary ??
+                              decision.decision_statement}
+                          </p>
+                        </div>
+
+                        <div className="dashboard-decision-meta">
+                          <span>
+                            {formatConfidence(
+                              decision.confidence_score,
+                            )}
+                          </span>
+
+                          <span>
+                            {formatDate(
+                              decision.decision_date,
+                            )}
+                          </span>
+
+                          <ArrowUpRight
+                            size={16}
+                          />
+                        </div>
+                      </button>
+                    ),
+                  )}
+                </div>
+              )}
+            </article>
+
+            <article className="panel ask-card">
+              <div className="ask-icon">
+                <BrainCircuit size={26} />
+              </div>
+
+              <p className="eyebrow">
+                Ask decision memory
+              </p>
+
+              <h2>
+                What do you need to understand?
+              </h2>
+
+              <p>
+                Search decisions, source evidence,
+                people, incidents, and timelines.
+              </p>
+
+              <div className="search-preview">
+                <Search size={18} />
+
+                <span>
+                  Why did we migrate to PostgreSQL?
+                </span>
+              </div>
+
+              <button
+                className="primary-button"
+                type="button"
+                onClick={() =>
+                  navigate("/app/chat")
+                }
+              >
+                Open decision chat
+                <ArrowUpRight size={17} />
+              </button>
+            </article>
+          </section>
+
+          <section className="dashboard-secondary-grid">
+            <article className="panel">
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">
+                    Document activity
+                  </p>
+
+                  <h2>Latest source files</h2>
+                </div>
+
+                <button
+                  type="button"
+                  className="icon-button"
+                  onClick={() =>
+                    navigate("/app/documents")
+                  }
+                >
+                  <ArrowUpRight size={18} />
+                </button>
+              </div>
+
+              {recentDocuments.length === 0 ? (
+                <div className="dashboard-empty compact">
+                  <FileText size={25} />
+                  <p>No documents uploaded.</p>
+                </div>
+              ) : (
+                <div className="dashboard-document-list">
+                  {recentDocuments.map(
+                    (document) => (
+                      <div
+                        key={document.id}
+                        className="dashboard-document-row"
+                      >
+                        <div className="dashboard-document-icon">
+                          <FileText size={17} />
+                        </div>
+
+                        <div>
+                          <strong>
+                            {
+                              document.original_filename
+                            }
+                          </strong>
+
+                          <small>
+                            {statusLabel(
+                              document.status,
+                            )}
+                          </small>
+                        </div>
+
+                        {document.status ===
+                        "completed" ? (
+                          <CheckCircle2
+                            size={17}
+                            className="dashboard-ready-icon"
+                          />
+                        ) : (
+                          <span className="dashboard-progress-value">
+                            {
+                              document.processing_progress
+                            }
+                            %
+                          </span>
+                        )}
+                      </div>
+                    ),
+                  )}
+                </div>
+              )}
+            </article>
+
+            <article className="panel dashboard-health-panel">
+              <p className="eyebrow">
+                Workspace health
+              </p>
+
+              <h2>Review and retrieval readiness</h2>
+
+              <div className="dashboard-health-list">
+                <div>
+                  <span>Approved decisions</span>
+                  <strong>
+                    {decisionStats?.approved ?? 0}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Rejected decisions</span>
+                  <strong>
+                    {decisionStats?.rejected ?? 0}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Average confidence
+                  </span>
+
+                  <strong>
+                    {formatConfidence(
+                      decisionStats
+                        ?.average_confidence ?? 0,
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Graph relationships</span>
+                  <strong>
+                    {graph.edges.length}
+                  </strong>
+                </div>
+              </div>
+            </article>
+          </section>
+        </>
+      )}
     </div>
   );
 }
