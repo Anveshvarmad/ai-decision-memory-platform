@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.schemas.chat import CitationResponse
 from app.services.llm_service import generate_answer
-from app.services.search_service import semantic_search
+from app.services.search_service import hybrid_search
 
 
 INSUFFICIENT_EVIDENCE_MESSAGE = (
@@ -38,13 +38,23 @@ def build_context(
             else "Location unavailable"
         )
 
+        similarity = (
+            result.semantic_similarity
+            if result.semantic_similarity is not None
+            else 0.0
+        )
+
         context_parts.append(
             "\n".join(
                 [
                     f"[{index}]",
                     f"Document: {result.document_name}",
                     f"Location: {location}",
-                    f"Similarity: {result.similarity}",
+                    (
+                        "Matched by: "
+                        + ", ".join(result.matched_by)
+                    ),
+                    f"Semantic similarity: {similarity}",
                     "Content:",
                     result.content,
                 ]
@@ -65,7 +75,7 @@ def build_context(
                 page_number=result.page_number,
                 section_title=result.section_title,
                 excerpt=excerpt,
-                similarity=result.similarity,
+                similarity=similarity,
             )
         )
 
@@ -79,12 +89,15 @@ def answer_question(
     limit: int,
     minimum_similarity: float,
 ) -> tuple[str, list[CitationResponse], bool]:
-    results = semantic_search(
+    results, _, _ = hybrid_search(
         database=database,
         workspace_id=workspace_id,
         query=question,
         limit=limit,
+        semantic_limit=max(limit * 3, 10),
+        keyword_limit=max(limit * 3, 10),
         minimum_similarity=minimum_similarity,
+        rrf_k=60,
     )
 
     if not results:
