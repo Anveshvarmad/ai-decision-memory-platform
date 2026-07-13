@@ -219,3 +219,44 @@ export interface TimelineGenerationResponse {
   status: string;
   task_id: string;
 }
+
+export type GraphEntityType =
+  | "decision"
+  | "person"
+  | "technology"
+  | "service"
+  | "incident"
+  | "project"
+  | "document"
+  | "concept"
+  | string;
+
+export interface GraphNode {
+  id: string;
+  label: string;
+  entity_type: GraphEntityType;
+  metadata: Record<string, unknown>;
+}
+
+export interface GraphEdge {
+  id: string;
+  source: string;
+  target: string;
+  relationship_type: string;
+  description: string | null;
+  metadata: Record<string, unknown>;
+}
+
+export interface WorkspaceGraph {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+}
+
+export interface GraphBuildResponse {
+  decision_id: string;
+  created_entities: number;
+  reused_entities: number;
+  created_relationships: number;
+  skipped_relationships: number;
+  status: string;
+}

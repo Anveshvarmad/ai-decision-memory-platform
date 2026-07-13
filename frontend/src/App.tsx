@@ -10,8 +10,8 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
 import { ChatPage } from "./pages/ChatPage";
 import { DecisionsPage } from "./pages/DecisionsPage";
+import { GraphPage } from "./pages/GraphPage";
 import { LoginPage } from "./pages/LoginPage";
-import { PlaceholderPage } from "./pages/PlaceholderPage";
 
 export default function App() {
   return (
@@ -48,12 +48,7 @@ export default function App() {
 
           <Route
             path="graph"
-            element={
-              <PlaceholderPage
-                title="Knowledge Graph"
-                description="Explore connections between decisions, people, systems, incidents, and documents."
-              />
-            }
+            element={<GraphPage />}
           />
         </Route>
       </Route>

@@ -16,10 +16,12 @@ import type {
   DocumentRecord,
   DocumentRetryResponse,
   DocumentUploadResponse,
+  GraphBuildResponse,
   TimelineGenerationResponse,
   User,
   Workspace,
   WorkspaceCreateRequest,
+  WorkspaceGraph,
 } from "../types/api";
 
 const API_URL =
@@ -342,6 +344,57 @@ export function generateDecisionTimeline(
     `/workspaces/${workspaceId}/decisions/${decisionId}/generate-timeline`,
     {
       method: "POST",
+    },
+  );
+}
+
+export function getWorkspaceGraph(
+  workspaceId: string,
+  entityType?: string,
+): Promise<WorkspaceGraph> {
+  const params = new URLSearchParams();
+
+  if (entityType && entityType !== "all") {
+    params.set("entity_type", entityType);
+  }
+
+  const query = params.toString();
+
+  return request<WorkspaceGraph>(
+    `/workspaces/${workspaceId}/graph${
+      query ? `?${query}` : ""
+    }`,
+  );
+}
+
+export function getGraphNeighbors(
+  workspaceId: string,
+  entityId: string,
+): Promise<WorkspaceGraph> {
+  return request<WorkspaceGraph>(
+    `/workspaces/${workspaceId}/graph/entities/${entityId}/neighbors`,
+  );
+}
+
+export function buildDecisionGraph(
+  workspaceId: string,
+  decisionId: string,
+): Promise<GraphBuildResponse> {
+  return request<GraphBuildResponse>(
+    `/workspaces/${workspaceId}/decisions/${decisionId}/build-graph`,
+    {
+      method: "POST",
+    },
+  );
+}
+
+export function clearWorkspaceGraph(
+  workspaceId: string,
+): Promise<void> {
+  return request<void>(
+    `/workspaces/${workspaceId}/graph`,
+    {
+      method: "DELETE",
     },
   );
 }
