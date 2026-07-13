@@ -88,3 +88,9 @@ from app.schemas.context import (
     ReasoningTimelineItem,
     RelatedDecisionItem,
 )
+
+from app.schemas.context import (
+    CitationCoverage,
+    ClaimCitationGroup,
+    ReasoningClaim,
+)

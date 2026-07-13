@@ -306,6 +306,12 @@ export interface DecisionReasoningResult {
   timeline: ReasoningTimelineItem[];
   related_decisions: RelatedDecisionItem[];
   uncertainties: string[];
+  reason_claims: ReasoningClaim[];
+  alternative_claims: ReasoningClaim[];
+  stakeholder_claims: ReasoningClaim[];
+  risk_claims: ReasoningClaim[];
+  impact_claims: ReasoningClaim[];
+  uncertainty_claims: ReasoningClaim[];
   source_ids: string[];
 }
 
@@ -327,8 +333,31 @@ export interface DecisionReasoningResponse {
   query_type: string;
   result: DecisionReasoningResult;
   citations: ReasoningCitation[];
+  claim_citations: ClaimCitationGroup[];
+  citation_coverage: CitationCoverage;
   selected_context_items: number;
   estimated_context_tokens: number;
   model: string;
   raw_context: unknown[] | null;
+}
+
+export interface ReasoningClaim {
+  text: string;
+  source_ids: string[];
+  supported: boolean;
+}
+
+export interface ClaimCitationGroup {
+  claim_type: string;
+  claim_index: number;
+  claim_text: string;
+  supported: boolean;
+  citations: ReasoningCitation[];
+}
+
+export interface CitationCoverage {
+  total_claims: number;
+  supported_claims: number;
+  unsupported_claims: number;
+  coverage_ratio: number;
 }

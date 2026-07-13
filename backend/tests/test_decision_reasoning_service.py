@@ -59,10 +59,24 @@ def test_parse_reasoning_result_filters_invalid_sources():
         "summary": "Database decision.",
         "confidence": 0.9,
         "reasons": [
-            "Transactional consistency"
+            {
+                "text": (
+                    "Transactional consistency"
+                ),
+                "source_ids": [
+                    "decision-test"
+                ],
+            }
         ],
         "alternatives": [],
-        "stakeholders": ["Alice"],
+        "stakeholders": [
+            {
+                "text": "Alice",
+                "source_ids": [
+                    "decision-test"
+                ],
+            }
+        ],
         "risks": [],
         "impacts": [],
         "timeline": [],

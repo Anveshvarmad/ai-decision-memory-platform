@@ -8,6 +8,7 @@ from app.core.config import get_settings
 from app.schemas.context import (
     DecisionReasoningResult,
     RankedContextItem,
+    ReasoningClaim,
     ReasoningTimelineItem,
     RelatedDecisionItem,
 )
@@ -89,6 +90,10 @@ Strict rules:
 8. Return valid JSON only.
 9. Do not wrap JSON in Markdown.
 10. Use empty arrays when information is unavailable.
+11. Every reason, alternative, stakeholder, risk, impact, uncertainty,
+    timeline item, and related decision must include source_ids.
+12. Never attach a source_id unless that source directly supports the claim.
+13. A claim without direct evidence must be placed under uncertainties.
 
 Return exactly this JSON shape:
 
@@ -99,11 +104,36 @@ Return exactly this JSON shape:
   "decision_status": "approved, candidate, rejected, or null",
   "decision_date": "ISO date string or null",
   "confidence": 0.0,
-  "reasons": ["..."],
-  "alternatives": ["..."],
-  "stakeholders": ["..."],
-  "risks": ["..."],
-  "impacts": ["..."],
+  "reasons": [
+    {
+      "text": "...",
+      "source_ids": ["source-id"]
+    }
+  ],
+  "alternatives": [
+    {
+      "text": "...",
+      "source_ids": ["source-id"]
+    }
+  ],
+  "stakeholders": [
+    {
+      "text": "...",
+      "source_ids": ["source-id"]
+    }
+  ],
+  "risks": [
+    {
+      "text": "...",
+      "source_ids": ["source-id"]
+    }
+  ],
+  "impacts": [
+    {
+      "text": "...",
+      "source_ids": ["source-id"]
+    }
+  ],
   "timeline": [
     {
       "date": "ISO date string or null",
@@ -121,7 +151,12 @@ Return exactly this JSON shape:
       "source_ids": ["source-id"]
     }
   ],
-  "uncertainties": ["..."],
+  "uncertainties": [
+    {
+      "text": "...",
+      "source_ids": ["source-id"]
+    }
+  ],
   "source_ids": ["all source ids used"]
 }
 """.strip()
@@ -203,6 +238,57 @@ def normalize_string_list(
                 result.append(cleaned)
 
     return result
+
+
+def normalize_claims(
+    value: Any,
+) -> list[ReasoningClaim]:
+    if not isinstance(value, list):
+        return []
+
+    claims: list[ReasoningClaim] = []
+
+    for item in value:
+        if isinstance(item, str):
+            cleaned = item.strip()
+
+            if cleaned:
+                claims.append(
+                    ReasoningClaim(
+                        text=cleaned,
+                        source_ids=[],
+                        supported=False,
+                    )
+                )
+
+            continue
+
+        if not isinstance(item, dict):
+            continue
+
+        text_value = item.get("text")
+
+        if not isinstance(text_value, str):
+            continue
+
+        cleaned_text = text_value.strip()
+
+        if not cleaned_text:
+            continue
+
+        source_ids = normalize_string_list(
+            item.get("source_ids")
+        )
+
+        claims.append(
+            ReasoningClaim(
+                text=cleaned_text,
+                source_ids=source_ids,
+                supported=bool(source_ids),
+            )
+        )
+
+    return claims
 
 
 def normalize_timeline(
@@ -309,29 +395,52 @@ def validate_source_ids(
         for item in ranked_items
     }
 
-    result.source_ids = [
-        source_id
-        for source_id in result.source_ids
-        if source_id in valid_source_ids
-    ]
-
-    for timeline_item in result.timeline:
-        timeline_item.source_ids = [
+    def filter_ids(
+        source_ids: list[str],
+    ) -> list[str]:
+        return [
             source_id
-            for source_id
-            in timeline_item.source_ids
+            for source_id in source_ids
             if source_id in valid_source_ids
         ]
+
+    result.source_ids = filter_ids(
+        result.source_ids
+    )
+
+    claim_groups = [
+        result.reason_claims,
+        result.alternative_claims,
+        result.stakeholder_claims,
+        result.risk_claims,
+        result.impact_claims,
+        result.uncertainty_claims,
+    ]
+
+    for claims in claim_groups:
+        for claim in claims:
+            claim.source_ids = filter_ids(
+                claim.source_ids
+            )
+            claim.supported = bool(
+                claim.source_ids
+            )
+
+    for timeline_item in result.timeline:
+        timeline_item.source_ids = (
+            filter_ids(
+                timeline_item.source_ids
+            )
+        )
 
     for related_decision in (
         result.related_decisions
     ):
-        related_decision.source_ids = [
-            source_id
-            for source_id
-            in related_decision.source_ids
-            if source_id in valid_source_ids
-        ]
+        related_decision.source_ids = (
+            filter_ids(
+                related_decision.source_ids
+            )
+        )
 
     return result
 
@@ -351,6 +460,30 @@ def parse_reasoning_result(
 
     if not isinstance(summary, str):
         summary = answer
+
+    reason_claims = normalize_claims(
+        payload.get("reasons")
+    )
+
+    alternative_claims = normalize_claims(
+        payload.get("alternatives")
+    )
+
+    stakeholder_claims = normalize_claims(
+        payload.get("stakeholders")
+    )
+
+    risk_claims = normalize_claims(
+        payload.get("risks")
+    )
+
+    impact_claims = normalize_claims(
+        payload.get("impacts")
+    )
+
+    uncertainty_claims = normalize_claims(
+        payload.get("uncertainties")
+    )
 
     result = DecisionReasoningResult(
         answer=answer.strip(),
@@ -373,21 +506,36 @@ def parse_reasoning_result(
         confidence=normalize_confidence(
             payload.get("confidence")
         ),
-        reasons=normalize_string_list(
-            payload.get("reasons")
-        ),
-        alternatives=normalize_string_list(
-            payload.get("alternatives")
-        ),
-        stakeholders=normalize_string_list(
-            payload.get("stakeholders")
-        ),
-        risks=normalize_string_list(
-            payload.get("risks")
-        ),
-        impacts=normalize_string_list(
-            payload.get("impacts")
-        ),
+        reasons=[
+            claim.text
+            for claim in reason_claims
+        ],
+        alternatives=[
+            claim.text
+            for claim in alternative_claims
+        ],
+        stakeholders=[
+            claim.text
+            for claim in stakeholder_claims
+        ],
+        risks=[
+            claim.text
+            for claim in risk_claims
+        ],
+        impacts=[
+            claim.text
+            for claim in impact_claims
+        ],
+        uncertainties=[
+            claim.text
+            for claim in uncertainty_claims
+        ],
+        reason_claims=reason_claims,
+        alternative_claims=alternative_claims,
+        stakeholder_claims=stakeholder_claims,
+        risk_claims=risk_claims,
+        impact_claims=impact_claims,
+        uncertainty_claims=uncertainty_claims,
         timeline=normalize_timeline(
             payload.get("timeline")
         ),
@@ -397,9 +545,6 @@ def parse_reasoning_result(
                     "related_decisions"
                 )
             )
-        ),
-        uncertainties=normalize_string_list(
-            payload.get("uncertainties")
         ),
         source_ids=normalize_string_list(
             payload.get("source_ids")

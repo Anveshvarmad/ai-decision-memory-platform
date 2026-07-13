@@ -15,6 +15,9 @@ from app.services.context_ranker import (
     RankingOptions,
     rank_context,
 )
+from app.services.claim_citation_service import (
+    build_claim_citation_groups,
+)
 from app.services.decision_reasoning_service import (
     reason_over_context,
 )
@@ -139,6 +142,16 @@ def generate_decision_intelligence(
         ),
     )
 
+    (
+        claim_citations,
+        citation_coverage,
+    ) = build_claim_citation_groups(
+        result=reasoning_result,
+        ranked_items=(
+            ranked_context.ranked_items
+        ),
+    )
+
     return DecisionReasoningResponse(
         query=query,
         query_type=(
@@ -146,6 +159,8 @@ def generate_decision_intelligence(
         ),
         result=reasoning_result,
         citations=citations,
+        claim_citations=claim_citations,
+        citation_coverage=citation_coverage,
         selected_context_items=(
             ranked_context.selected_items
         ),

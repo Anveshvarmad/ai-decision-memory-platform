@@ -233,6 +233,14 @@ class RelatedDecisionItem(BaseModel):
     )
 
 
+class ReasoningClaim(BaseModel):
+    text: str
+    source_ids: list[str] = Field(
+        default_factory=list
+    )
+    supported: bool = False
+
+
 class DecisionReasoningResult(BaseModel):
     answer: str
     summary: str
@@ -280,6 +288,30 @@ class DecisionReasoningResult(BaseModel):
         default_factory=list
     )
 
+    reason_claims: list[ReasoningClaim] = Field(
+        default_factory=list
+    )
+
+    alternative_claims: list[ReasoningClaim] = Field(
+        default_factory=list
+    )
+
+    stakeholder_claims: list[ReasoningClaim] = Field(
+        default_factory=list
+    )
+
+    risk_claims: list[ReasoningClaim] = Field(
+        default_factory=list
+    )
+
+    impact_claims: list[ReasoningClaim] = Field(
+        default_factory=list
+    )
+
+    uncertainty_claims: list[ReasoningClaim] = Field(
+        default_factory=list
+    )
+
     source_ids: list[str] = Field(
         default_factory=list
     )
@@ -291,12 +323,36 @@ class DecisionReasoningRequest(
     include_raw_context: bool = False
 
 
+class ClaimCitationGroup(BaseModel):
+    claim_type: str
+    claim_index: int
+    claim_text: str
+    supported: bool
+    citations: list[ReasoningCitation] = Field(
+        default_factory=list
+    )
+
+
+class CitationCoverage(BaseModel):
+    total_claims: int
+    supported_claims: int
+    unsupported_claims: int
+    coverage_ratio: float = Field(
+        ge=0.0,
+        le=1.0,
+    )
+
+
 class DecisionReasoningResponse(BaseModel):
     query: str
     query_type: str
 
     result: DecisionReasoningResult
     citations: list[ReasoningCitation]
+    claim_citations: list[ClaimCitationGroup] = Field(
+        default_factory=list
+    )
+    citation_coverage: CitationCoverage
 
     selected_context_items: int
     estimated_context_tokens: int
@@ -305,3 +361,5 @@ class DecisionReasoningResponse(BaseModel):
     raw_context: list[
         RankedContextItem
     ] | None = None
+
+
