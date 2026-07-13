@@ -3997,3 +3997,219 @@ code {
     grid-template-columns: 1fr;
   }
 }
+
+.interactive-graph-layout {
+  display: grid;
+  height: 720px;
+  overflow: hidden;
+  border: 1px solid #232737;
+  border-radius: 17px;
+  background: #0b0e17;
+  grid-template-columns:
+    minmax(0, 1fr)
+    320px;
+}
+
+.interactive-graph-canvas {
+  position: relative;
+  min-width: 0;
+  border-right: 1px solid #232737;
+}
+
+.interactive-graph-flow {
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(91, 76, 181, 0.1),
+      transparent 48%
+    ),
+    #0b0e17;
+}
+
+.interactive-graph-node {
+  display: flex;
+  width: 190px;
+  min-height: 66px;
+  align-items: center;
+  gap: 11px;
+  padding: 12px;
+  border: 1px solid #41475d;
+  border-radius: 13px;
+  background: rgba(20, 25, 38, 0.97);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.24);
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
+}
+
+.interactive-graph-node:hover,
+.interactive-graph-node.selected {
+  border-color: #8b7def;
+  box-shadow:
+    0 0 0 3px rgba(139, 125, 239, 0.12),
+    0 15px 34px rgba(0, 0, 0, 0.3);
+}
+
+.interactive-node-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(103, 89, 201, 0.16);
+  color: #aca1f3;
+}
+
+.interactive-graph-node.entity-person
+  .interactive-node-icon {
+  background: rgba(58, 126, 160, 0.15);
+  color: #7bb9d5;
+}
+
+.interactive-graph-node.entity-technology
+  .interactive-node-icon {
+  background: rgba(50, 145, 105, 0.15);
+  color: #79d0aa;
+}
+
+.interactive-graph-node.entity-incident
+  .interactive-node-icon {
+  background: rgba(174, 58, 74, 0.15);
+  color: #e6818d;
+}
+
+.interactive-graph-node.entity-document
+  .interactive-node-icon {
+  background: rgba(158, 122, 55, 0.15);
+  color: #d4b06b;
+}
+
+.interactive-node-content {
+  min-width: 0;
+}
+
+.interactive-node-content strong,
+.interactive-node-content span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.interactive-node-content strong {
+  color: #d3d7e3;
+  font-size: 11px;
+}
+
+.interactive-node-content span {
+  margin-top: 4px;
+  color: #6e768b;
+  font-size: 9px;
+  text-transform: capitalize;
+}
+
+.interactive-node-handle {
+  width: 7px !important;
+  height: 7px !important;
+  border: 1px solid #a99df2 !important;
+  background: #6054ad !important;
+}
+
+.react-flow__edge-path {
+  stroke: #535a70;
+  stroke-width: 1.5;
+}
+
+.react-flow__edge.animated
+  .react-flow__edge-path {
+  stroke: #8b7def;
+}
+
+.react-flow__edge-text {
+  fill: #8790a5;
+  font-size: 9px;
+}
+
+.react-flow__edge-textbg {
+  fill: #111520;
+  fill-opacity: 0.94;
+}
+
+.react-flow__controls {
+  overflow: hidden;
+  border: 1px solid #303548;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.react-flow__controls-button {
+  border-bottom-color: #303548;
+  background: #151925;
+  fill: #b5bbcb;
+}
+
+.react-flow__controls-button:hover {
+  background: #202536;
+}
+
+.react-flow__minimap {
+  border: 1px solid #303548;
+  border-radius: 10px;
+  background: #10141f;
+}
+
+.graph-fit-panel button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border: 1px solid #303548;
+  border-radius: 9px;
+  background: rgba(17, 21, 32, 0.92);
+  color: #aeb4c5;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.graph-fit-panel button:hover {
+  border-color: #6258ac;
+  color: #c1b8fa;
+}
+
+@media (max-width: 950px) {
+  .interactive-graph-layout {
+    height: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .interactive-graph-canvas {
+    height: 620px;
+    border-right: 0;
+    border-bottom: 1px solid #232737;
+  }
+
+  .interactive-graph-layout
+    .graph-detail-panel {
+    min-height: 320px;
+  }
+}
+
+@media (max-width: 600px) {
+  .interactive-graph-canvas {
+    height: 540px;
+  }
+
+  .interactive-graph-node {
+    width: 165px;
+  }
+
+  .react-flow__minimap {
+    display: none;
+  }
+}
