@@ -60,6 +60,34 @@ services:
       redis:
         condition: service_healthy
 
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: decision-memory-worker
+    restart: unless-stopped
+    command:
+      [
+        "celery",
+        "-A",
+        "app.worker.celery_app",
+        "worker",
+        "--loglevel=info",
+        "--concurrency=2"
+      ]
+    env_file:
+      - .env
+    volumes:
+      - ./backend/app:/app/app
+      - ./data:/app/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
   decision-postgres-data:
   decision-redis-data:
