@@ -4380,3 +4380,271 @@ code {
     height: 15px;
   }
 }
+
+.graph-path-explorer {
+  margin-bottom: 14px;
+  padding: 18px;
+  border: 1px solid #292e40;
+  border-radius: 15px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(92, 77, 181, 0.1),
+      rgba(14, 18, 28, 0.9)
+    );
+}
+
+.graph-path-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.graph-path-heading svg {
+  color: #a69aec;
+}
+
+.graph-path-heading h3 {
+  margin: 3px 0 0;
+}
+
+.graph-path-selectors {
+  display: grid;
+  gap: 12px;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+}
+
+.graph-path-selectors label {
+  display: grid;
+  gap: 6px;
+}
+
+.graph-path-selectors label > span {
+  color: #8d95a9;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.graph-path-selectors select {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 11px;
+  border: 1px solid #303548;
+  border-radius: 9px;
+  outline: none;
+  background: #0e121c;
+  color: #dce0e9;
+}
+
+.graph-path-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.graph-path-result {
+  margin-top: 14px;
+  padding: 13px;
+  border: 1px solid
+    rgba(70, 177, 119, 0.26);
+  border-radius: 11px;
+  background: rgba(45, 130, 84, 0.09);
+}
+
+.graph-path-summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 12px;
+  color: #75d5a4;
+}
+
+.graph-path-summary strong,
+.graph-path-summary small {
+  display: block;
+}
+
+.graph-path-summary small {
+  margin-top: 3px;
+  color: #709482;
+}
+
+.graph-path-chain {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.graph-path-step {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.graph-path-step > span {
+  min-width: 145px;
+  padding: 9px;
+  border: 1px solid #304537;
+  border-radius: 9px;
+  background: #101a16;
+}
+
+.graph-path-step strong,
+.graph-path-step small {
+  display: block;
+}
+
+.graph-path-step strong {
+  color: #bad7c7;
+  font-size: 10px;
+}
+
+.graph-path-step small {
+  margin-top: 3px;
+  color: #678576;
+  font-size: 8px;
+  text-transform: capitalize;
+}
+
+.graph-path-step i {
+  max-width: 130px;
+  color: #797f93;
+  font-size: 8px;
+  font-style: normal;
+  text-align: center;
+}
+
+.graph-path-not-found {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 13px;
+  padding: 11px;
+  border: 1px solid
+    rgba(190, 78, 91, 0.24);
+  border-radius: 9px;
+  background: rgba(145, 49, 62, 0.09);
+  color: #db7b88;
+  font-size: 10px;
+}
+
+.graph-neighborhood-controls {
+  margin-top: 16px;
+  padding-top: 15px;
+  border-top: 1px solid #2d3244;
+}
+
+.graph-neighborhood-controls p {
+  margin: 5px 0 10px;
+  color: #70788d;
+  font-size: 10px;
+}
+
+.graph-depth-selector {
+  display: flex;
+  gap: 6px;
+}
+
+.graph-depth-selector button {
+  min-height: 31px;
+  padding: 0 10px;
+  border: 1px solid #303548;
+  border-radius: 8px;
+  background: #10141f;
+  color: #737b90;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.graph-depth-selector button.active {
+  border-color: #6257ad;
+  background: rgba(98, 84, 192, 0.16);
+  color: #afa4f3;
+}
+
+.graph-relationship-filters {
+  margin-top: 16px;
+  padding-top: 15px;
+  border-top: 1px solid #2d3244;
+}
+
+.graph-relationship-filters > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.graph-relationship-filters
+  > div:first-child
+  button {
+  border: 0;
+  background: transparent;
+  color: #777f94;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.graph-relationship-filters
+  > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.graph-relationship-filters
+  > div:last-child
+  button {
+  padding: 6px 8px;
+  border: 1px solid #303548;
+  border-radius: 999px;
+  background: #10141f;
+  color: #70788d;
+  font-size: 8px;
+  cursor: pointer;
+}
+
+.graph-relationship-filters
+  > div:last-child
+  button.active {
+  border-color: #6257ad;
+  background: rgba(98, 84, 192, 0.17);
+  color: #b2a7f4;
+}
+
+.react-flow__edge.graph-path-edge
+  .react-flow__edge-path {
+  stroke: #73d3a2;
+  stroke-width: 3;
+  filter:
+    drop-shadow(
+      0 0 5px
+      rgba(76, 190, 126, 0.45)
+    );
+}
+
+.react-flow__node.graph-path-node
+  .interactive-graph-node {
+  border-color: #73d3a2;
+  box-shadow:
+    0 0 0 3px
+      rgba(76, 190, 126, 0.14),
+    0 0 22px
+      rgba(76, 190, 126, 0.22);
+}
+
+@media (max-width: 700px) {
+  .graph-path-selectors {
+    grid-template-columns: 1fr;
+  }
+
+  .graph-path-actions button {
+    flex: 1;
+  }
+}

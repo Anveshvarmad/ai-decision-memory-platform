@@ -65,6 +65,17 @@ import {
 } from "../components/GraphLayoutToolbar";
 
 import {
+  GraphPathExplorer,
+} from "../components/GraphPathExplorer";
+
+import {
+  findShortestPath,
+  getNeighborhood,
+  getRelationshipTypes,
+  type GraphPath,
+} from "../lib/graphTraversal";
+
+import {
   applyGraphLayout,
   applySavedPositions,
   clearGraphPositions,
@@ -188,27 +199,44 @@ function convertNodes(
 
 function convertEdges(
   graphEdges: GraphEdge[],
+  highlightedEdgeIds: Set<string> =
+    new Set(),
 ): Edge[] {
-  return graphEdges.map((edge) => ({
-    id: edge.id,
-    source: edge.source,
-    target: edge.target,
-    label: formatRelationship(
-      edge.relationship_type,
-    ),
-    type: "smoothstep",
-    animated:
-      edge.relationship_type ===
-      "caused_by",
-    markerEnd: {
-      type: MarkerType.ArrowClosed,
-    },
-    data: {
-      relationshipType:
+  return graphEdges.map((edge) => {
+    const highlighted =
+      highlightedEdgeIds.has(edge.id);
+
+    return {
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      label: formatRelationship(
         edge.relationship_type,
-      description: edge.description,
-    },
-  }));
+      ),
+      type: "smoothstep",
+      animated:
+        highlighted ||
+        edge.relationship_type ===
+          "caused_by",
+      className: highlighted
+        ? "graph-path-edge"
+        : "",
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+      },
+      style: highlighted
+        ? {
+            strokeWidth: 3,
+          }
+        : undefined,
+      data: {
+        relationshipType:
+          edge.relationship_type,
+        description: edge.description,
+        highlighted,
+      },
+    };
+  });
 }
 
 function GraphCanvas({
@@ -218,10 +246,14 @@ function GraphCanvas({
   onSelectNode,
   onPositionsSaved,
   onPositionsReset,
+  highlightedNodeIds,
+  highlightedEdgeIds,
 }: {
   graph: WorkspaceGraph;
   workspaceId: string;
   selectedNode: GraphNode | null;
+  highlightedNodeIds: Set<string>;
+  highlightedEdgeIds: Set<string>;
   onSelectNode: (
     node: GraphNode,
   ) => void;
@@ -231,8 +263,15 @@ function GraphCanvas({
   const { fitView } = useReactFlow();
 
   const convertedEdges = useMemo(
-    () => convertEdges(graph.edges),
-    [graph.edges],
+    () =>
+      convertEdges(
+        graph.edges,
+        highlightedEdgeIds,
+      ),
+    [
+      graph.edges,
+      highlightedEdgeIds,
+    ],
   );
 
   const convertedNodes = useMemo(() => {
@@ -305,10 +344,21 @@ function GraphCanvas({
       current.map((node) => ({
         ...node,
         selected:
-          node.id === selectedNode?.id,
+          node.id === selectedNode?.id ||
+          highlightedNodeIds.has(
+            node.id,
+          ),
+        className:
+          highlightedNodeIds.has(node.id)
+            ? "graph-path-node"
+            : "",
       })),
     );
-  }, [selectedNode, setNodes]);
+  }, [
+    selectedNode,
+    highlightedNodeIds,
+    setNodes,
+  ]);
 
   function handleLayoutChange(
     mode: GraphLayoutMode,
@@ -503,9 +553,40 @@ export function GraphPage() {
   const [notice, setNotice] =
     useState<string | null>(null);
 
+  const [pathStartNodeId, setPathStartNodeId] =
+    useState("");
+
+  const [pathEndNodeId, setPathEndNodeId] =
+    useState("");
+
+  const [activePath, setActivePath] =
+    useState<GraphPath | null>(null);
+
+  const [pathSearched, setPathSearched] =
+    useState(false);
+
+  const [
+    neighborhoodDepth,
+    setNeighborhoodDepth,
+  ] = useState(1);
+
+  const [
+    focusedNeighborhood,
+    setFocusedNeighborhood,
+  ] = useState<WorkspaceGraph | null>(
+    null,
+  );
+
+  const [
+    selectedRelationshipTypes,
+    setSelectedRelationshipTypes,
+  ] = useState<string[]>([]);
+
   const loadGraph = useCallback(
     async (showLoader = false) => {
-      if (!workspaceId) {
+    
+
+  if (!workspaceId) {
         setGraph({
           nodes: [],
           edges: [],
@@ -590,6 +671,12 @@ export function GraphPage() {
 
       setSelectedNode(null);
       setNeighborGraph(null);
+      setPathStartNodeId("");
+      setPathEndNodeId("");
+      setActivePath(null);
+      setPathSearched(false);
+      setFocusedNeighborhood(null);
+      setSelectedRelationshipTypes([]);
       setLoading(true);
     }
 
@@ -711,23 +798,57 @@ export function GraphPage() {
     }
   }
 
+  const relationshipTypes = useMemo(
+    () =>
+      getRelationshipTypes(
+        graph.edges,
+      ),
+    [graph.edges],
+  );
+
   const visibleGraph = useMemo(() => {
+    const baseGraph =
+      focusedNeighborhood ?? graph;
+
+    const relationshipFilteredEdges =
+      selectedRelationshipTypes.length === 0
+        ? baseGraph.edges
+        : baseGraph.edges.filter((edge) =>
+            selectedRelationshipTypes.includes(
+              edge.relationship_type,
+            ),
+          );
+
+    const connectedNodeIds = new Set<string>();
+
+    relationshipFilteredEdges.forEach(
+      (edge) => {
+        connectedNodeIds.add(edge.source);
+        connectedNodeIds.add(edge.target);
+      },
+    );
+
+    let nodes =
+      selectedRelationshipTypes.length === 0
+        ? baseGraph.nodes
+        : baseGraph.nodes.filter((node) =>
+            connectedNodeIds.has(node.id),
+          );
+
     const normalized =
       searchTerm.trim().toLowerCase();
 
-    if (!normalized) {
-      return graph;
+    if (normalized) {
+      nodes = nodes.filter(
+        (node) =>
+          node.label
+            .toLowerCase()
+            .includes(normalized) ||
+          node.entity_type
+            .toLowerCase()
+            .includes(normalized),
+      );
     }
-
-    const nodes = graph.nodes.filter(
-      (node) =>
-        node.label
-          .toLowerCase()
-          .includes(normalized) ||
-        node.entity_type
-          .toLowerCase()
-          .includes(normalized),
-    );
 
     const nodeIds = new Set(
       nodes.map((node) => node.id),
@@ -735,13 +856,35 @@ export function GraphPage() {
 
     return {
       nodes,
-      edges: graph.edges.filter(
-        (edge) =>
-          nodeIds.has(edge.source) &&
-          nodeIds.has(edge.target),
-      ),
+      edges:
+        relationshipFilteredEdges.filter(
+          (edge) =>
+            nodeIds.has(edge.source) &&
+            nodeIds.has(edge.target),
+        ),
     };
-  }, [graph, searchTerm]);
+  }, [
+    graph,
+    focusedNeighborhood,
+    searchTerm,
+    selectedRelationshipTypes,
+  ]);
+
+  const highlightedNodeIds = useMemo(
+    () =>
+      new Set(
+        activePath?.nodeIds ?? [],
+      ),
+    [activePath],
+  );
+
+  const highlightedEdgeIds = useMemo(
+    () =>
+      new Set(
+        activePath?.edgeIds ?? [],
+      ),
+    [activePath],
+  );
 
   const selectedRelationships =
     useMemo(() => {
@@ -787,6 +930,61 @@ export function GraphPage() {
           node.id === connectedId,
       )
     );
+  }
+
+  function handleFindPath() {
+    const path = findShortestPath(
+      graph,
+      pathStartNodeId,
+      pathEndNodeId,
+    );
+
+    setActivePath(path);
+    setPathSearched(true);
+
+    if (path) {
+      setFocusedNeighborhood({
+        nodes: path.nodes,
+        edges: path.edges,
+      });
+
+      setNotice(
+        `Connection found across ${path.edges.length} relationship${
+          path.edges.length === 1
+            ? ""
+            : "s"
+        }.`,
+      );
+    }
+  }
+
+  function handleResetPath() {
+    setActivePath(null);
+    setPathSearched(false);
+    setFocusedNeighborhood(null);
+  }
+
+  function handleFocusNeighborhood() {
+    if (!pathStartNodeId) {
+      return;
+    }
+
+    setFocusedNeighborhood(
+      getNeighborhood(
+        graph,
+        pathStartNodeId,
+        neighborhoodDepth,
+      ),
+    );
+
+    setActivePath(null);
+    setPathSearched(false);
+  }
+
+  function handleResetFocus() {
+    setFocusedNeighborhood(null);
+    setActivePath(null);
+    setPathSearched(false);
   }
 
   if (!workspaceId) {
@@ -982,6 +1180,45 @@ export function GraphPage() {
         </div>
       </section>
 
+      <GraphPathExplorer
+        nodes={graph.nodes}
+        startNodeId={pathStartNodeId}
+        endNodeId={pathEndNodeId}
+        path={activePath}
+        pathSearched={pathSearched}
+        neighborhoodDepth={
+          neighborhoodDepth
+        }
+        selectedRelationshipTypes={
+          selectedRelationshipTypes
+        }
+        relationshipTypes={
+          relationshipTypes
+        }
+        onStartNodeChange={(nodeId) => {
+          setPathStartNodeId(nodeId);
+          setActivePath(null);
+          setPathSearched(false);
+        }}
+        onEndNodeChange={(nodeId) => {
+          setPathEndNodeId(nodeId);
+          setActivePath(null);
+          setPathSearched(false);
+        }}
+        onFindPath={handleFindPath}
+        onResetPath={handleResetPath}
+        onNeighborhoodDepthChange={
+          setNeighborhoodDepth
+        }
+        onFocusNeighborhood={
+          handleFocusNeighborhood
+        }
+        onResetFocus={handleResetFocus}
+        onRelationshipTypesChange={
+          setSelectedRelationshipTypes
+        }
+      />
+
       <section className="graph-cluster-legend">
         {[
           "decision",
@@ -1028,6 +1265,12 @@ export function GraphPage() {
                 graph={visibleGraph}
                 workspaceId={workspaceId}
                 selectedNode={selectedNode}
+                highlightedNodeIds={
+                  highlightedNodeIds
+                }
+                highlightedEdgeIds={
+                  highlightedEdgeIds
+                }
                 onSelectNode={(node) =>
                   void selectNode(node)
                 }
