@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.auth import router as auth_router
 from app.api.documents import router as document_router
 from app.api.health import router as health_router
+from app.api.search import router as search_router
 from app.api.workspaces import router as workspace_router
 from app.core.config import get_settings
 
@@ -12,7 +13,7 @@ settings = get_settings()
 
 app = FastAPI(
     title=settings.project_name,
-    version="0.3.0",
+    version="0.4.0",
     description="Organizational decision intelligence and RAG platform",
 )
 
@@ -31,13 +32,14 @@ app.include_router(health_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")
 app.include_router(workspace_router, prefix="/api")
 app.include_router(document_router, prefix="/api")
+app.include_router(search_router, prefix="/api")
 
 
 @app.get("/")
 def root() -> dict[str, str]:
     return {
         "message": settings.project_name,
-        "version": "0.3.0",
+        "version": "0.4.0",
         "docs": "/docs",
         "health": "/api/health",
     }

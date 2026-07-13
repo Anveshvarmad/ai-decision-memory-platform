@@ -11,6 +11,7 @@ from app.services.document_extractor import (
     DocumentExtractionError,
     extract_document,
 )
+from app.services.embedding_service import generate_embeddings
 from app.services.text_chunker import (
     chunk_text,
     estimate_token_count,
@@ -20,6 +21,8 @@ from app.worker import celery_app
 
 logger = get_task_logger(__name__)
 settings = get_settings()
+
+EMBEDDING_BATCH_SIZE = 16
 
 
 def update_document_failure(
@@ -70,7 +73,6 @@ def process_document(
             document.status = "processing"
             document.processing_progress = 10
             document.error_message = None
-
             database.commit()
 
             file_path = Path(document.file_path)
@@ -82,7 +84,7 @@ def process_document(
 
             segments = extract_document(file_path)
 
-            document.processing_progress = 35
+            document.processing_progress = 30
             database.commit()
 
             if not segments:
@@ -96,6 +98,7 @@ def process_document(
                 )
             )
 
+            chunk_models: list[DocumentChunk] = []
             chunk_index = 0
             total_characters = 0
             page_count = 0
@@ -117,35 +120,78 @@ def process_document(
                 )
 
                 for chunk in chunks:
-                    database.add(
-                        DocumentChunk(
-                            document_id=document.id,
-                            chunk_index=chunk_index,
-                            content=chunk,
-                            token_count=estimate_token_count(chunk),
-                            page_number=segment["page_number"],
-                            section_title=segment["section_title"],
-                            metadata_json={},
-                            embedding=None,
-                        )
+                    chunk_model = DocumentChunk(
+                        document_id=document.id,
+                        chunk_index=chunk_index,
+                        content=chunk,
+                        token_count=estimate_token_count(chunk),
+                        page_number=segment["page_number"],
+                        section_title=segment["section_title"],
+                        metadata_json={},
+                        embedding=None,
                     )
 
+                    database.add(chunk_model)
+                    chunk_models.append(chunk_model)
                     chunk_index += 1
 
-            if chunk_index == 0:
+            if not chunk_models:
                 raise DocumentExtractionError(
-                    "The document did not produce any searchable chunks"
+                    "The document did not produce searchable chunks"
                 )
 
-            document.processing_progress = 85
             database.flush()
+
+            document.status = "embedding"
+            document.processing_progress = 50
+            database.commit()
+
+            total_chunks = len(chunk_models)
+
+            for batch_start in range(
+                0,
+                total_chunks,
+                EMBEDDING_BATCH_SIZE,
+            ):
+                batch = chunk_models[
+                    batch_start:
+                    batch_start + EMBEDDING_BATCH_SIZE
+                ]
+
+                embeddings = generate_embeddings(
+                    [chunk.content for chunk in batch]
+                )
+
+                for chunk_model, embedding in zip(
+                    batch,
+                    embeddings,
+                    strict=True,
+                ):
+                    chunk_model.embedding = embedding
+
+                completed_count = min(
+                    batch_start + len(batch),
+                    total_chunks,
+                )
+
+                document.processing_progress = min(
+                    95,
+                    50 + int(
+                        completed_count / total_chunks * 45
+                    ),
+                )
+
+                database.commit()
 
             document.status = "completed"
             document.processing_progress = 100
             document.error_message = None
             document.metadata_json = {
                 **document.metadata_json,
-                "chunk_count": chunk_index,
+                "chunk_count": total_chunks,
+                "embedded_chunk_count": total_chunks,
+                "embedding_model": settings.ollama_embedding_model,
+                "embedding_dimension": 768,
                 "character_count": total_characters,
                 "page_count": page_count or None,
                 "celery_task_id": self.request.id,
@@ -154,15 +200,16 @@ def process_document(
             database.commit()
 
             logger.info(
-                "Processed document %s into %s chunks",
+                "Processed and embedded document %s into %s chunks",
                 document.id,
-                chunk_index,
+                total_chunks,
             )
 
             return {
                 "document_id": str(document.id),
                 "status": "completed",
-                "chunk_count": chunk_index,
+                "chunk_count": total_chunks,
+                "embedded_chunk_count": total_chunks,
             }
 
     except Exception as error:

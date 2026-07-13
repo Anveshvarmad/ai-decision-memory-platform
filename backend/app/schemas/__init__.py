@@ -15,3 +15,9 @@ __all__ = [
     "WorkspaceMemberResponse",
     "WorkspaceResponse",
 ]
+
+from app.schemas.search import (
+    SemanticSearchRequest,
+    SemanticSearchResponse,
+    SemanticSearchResult,
+)
