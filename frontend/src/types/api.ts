@@ -436,3 +436,31 @@ export interface DocumentProcessingEvent {
   terminal: boolean;
   timestamp: string;
 }
+
+export interface WorkspaceProcessingDocument {
+  document_id: string;
+  workspace_id: string;
+  filename: string;
+  status: string;
+  progress: number;
+  stage: string;
+  message: string;
+  chunk_count: number | null;
+  error_message: string | null;
+  terminal: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface WorkspaceProcessingEvent {
+  event_type: string;
+  workspace_id: string;
+  active_documents:
+    WorkspaceProcessingDocument[];
+  recent_documents:
+    WorkspaceProcessingDocument[];
+  active_count: number;
+  completed_count: number;
+  failed_count: number;
+  timestamp: string;
+}

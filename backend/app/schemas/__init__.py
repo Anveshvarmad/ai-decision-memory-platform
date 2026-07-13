@@ -106,3 +106,8 @@ from app.schemas.comparison import (
 from app.schemas.processing import (
     DocumentProcessingEvent,
 )
+
+from app.schemas.processing import (
+    WorkspaceProcessingDocument,
+    WorkspaceProcessingEvent,
+)

@@ -14,6 +14,7 @@ import { GraphPage } from "./pages/GraphPage";
 import { IntelligencePage } from "./pages/IntelligencePage";
 import { ComparisonPage } from "./pages/ComparisonPage";
 import { LoginPage } from "./pages/LoginPage";
+import { ProcessingPage } from "./pages/ProcessingPage";
 
 export default function App() {
   return (
@@ -64,7 +65,11 @@ export default function App() {
             element={<GraphPage />}
           />
         </Route>
-      </Route>
+                <Route
+            path="processing"
+            element={<ProcessingPage />}
+          />
+</Route>
 
       <Route
         path="/"

@@ -1,4 +1,5 @@
 import {
+  Activity,
   BrainCircuit,
   FileStack,
   Sparkles,
@@ -54,6 +55,11 @@ const navigation = [
     path: "/app/graph",
     label: "Knowledge Graph",
     icon: Network,
+  },
+  {
+    path: "/app/processing",
+    label: "Processing",
+    icon: Activity,
   },
 ];
 

@@ -21,6 +21,9 @@ from app.models.workspace import WorkspaceMember
 from app.services.document_stream_service import (
     stream_document_processing,
 )
+from app.services.workspace_processing_stream_service import (
+    stream_workspace_processing,
+)
 
 
 router = APIRouter(
@@ -61,6 +64,40 @@ async def stream_document_events(
         async for event in (
             stream_document_processing(
                 document_id=document_id,
+                workspace_id=workspace_id,
+            )
+        ):
+            if await request.is_disconnected():
+                return
+
+            yield event
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": (
+                "no-cache, no-transform"
+            ),
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+@router.get("/processing/events")
+async def stream_workspace_events(
+    workspace_id: uuid.UUID,
+    request: Request,
+    membership: WorkspaceMember = Depends(
+        get_workspace_membership
+    ),
+):
+    del membership
+
+    async def event_generator():
+        async for event in (
+            stream_workspace_processing(
                 workspace_id=workspace_id,
             )
         ):
