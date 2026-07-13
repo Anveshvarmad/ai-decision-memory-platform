@@ -47,3 +47,12 @@ from app.schemas.timeline import (
     DecisionTimelineResponse,
     TimelineGenerationResponse,
 )
+
+from app.schemas.graph import (
+    GraphBuildResponse,
+    GraphEdgeResponse,
+    GraphEntityResponse,
+    GraphNodeResponse,
+    GraphRelationshipResponse,
+    WorkspaceGraphResponse,
+)

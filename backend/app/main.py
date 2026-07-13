@@ -5,6 +5,7 @@ from app.api.auth import router as auth_router
 from app.api.chat import router as chat_router
 from app.api.decisions import router as decision_router
 from app.api.documents import router as document_router
+from app.api.graph import router as graph_router
 from app.api.health import router as health_router
 from app.api.search import router as search_router
 from app.api.timelines import router as timeline_router
@@ -16,7 +17,7 @@ settings = get_settings()
 
 app = FastAPI(
     title=settings.project_name,
-    version="0.7.0",
+    version="0.8.0",
     description="Organizational decision intelligence and RAG platform",
 )
 
@@ -39,13 +40,14 @@ app.include_router(search_router, prefix="/api")
 app.include_router(chat_router, prefix="/api")
 app.include_router(decision_router, prefix="/api")
 app.include_router(timeline_router, prefix="/api")
+app.include_router(graph_router, prefix="/api")
 
 
 @app.get("/")
 def root() -> dict[str, str]:
     return {
         "message": settings.project_name,
-        "version": "0.7.0",
+        "version": "0.8.0",
         "docs": "/docs",
         "health": "/api/health",
     }
