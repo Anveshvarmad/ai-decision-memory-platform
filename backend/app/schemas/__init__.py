@@ -62,3 +62,14 @@ from app.schemas.decision_query import (
     DecisionQueryClassification,
     RelatedDecisionResponse,
 )
+
+from app.schemas.context import (
+    AggregatedContextResponse,
+    AggregatedDecisionContext,
+    AggregatedDecisionEvidence,
+    AggregatedDocumentContext,
+    AggregatedGraphRelationship,
+    AggregatedTimelineEvent,
+    ContextQueryRequest,
+    ContextSourceCounts,
+)

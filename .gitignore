@@ -32,3 +32,6 @@ decision-aware-*.json
 
 # Frontend environment
 frontend/.env
+
+# Context aggregation test output
+aggregated-context.json
