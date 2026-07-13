@@ -73,7 +73,7 @@ services:
         "app.worker.celery_app",
         "worker",
         "--loglevel=info",
-        "--concurrency=2"
+        "--concurrency=1"
       ]
     env_file:
       - .env

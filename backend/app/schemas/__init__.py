@@ -40,3 +40,10 @@ from app.schemas.decision import (
     DecisionStatsResponse,
     DecisionUpdateRequest,
 )
+
+from app.schemas.timeline import (
+    DecisionEventResponse,
+    DecisionEventUpdateRequest,
+    DecisionTimelineResponse,
+    TimelineGenerationResponse,
+)

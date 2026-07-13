@@ -12,6 +12,7 @@ celery_app = Celery(
     include=[
         "app.tasks.document_tasks",
         "app.tasks.decision_tasks",
+        "app.tasks.timeline_tasks",
     ],
 )
 
