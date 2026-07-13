@@ -49,6 +49,8 @@ services:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - ./backend/app:/app/app
+      - ./backend/alembic:/app/alembic
+      - ./backend/alembic.ini:/app/alembic.ini
       - ./data:/app/data
     extra_hosts:
       - "host.docker.internal:host-gateway"
