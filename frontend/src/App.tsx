@@ -1,4 +1,8 @@
 import {
+  WorkspaceProcessingProvider,
+} from "./contexts/WorkspaceProcessingContext";
+
+import {
   Navigate,
   Route,
   Routes,
@@ -27,7 +31,11 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route
           path="/app"
-          element={<AppLayout />}
+          element={
+              <WorkspaceProcessingProvider>
+                <AppLayout />
+              </WorkspaceProcessingProvider>
+            }
         >
           <Route
             index

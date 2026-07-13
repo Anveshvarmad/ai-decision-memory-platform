@@ -1,4 +1,8 @@
 import {
+  GlobalProcessingDock,
+} from "../components/GlobalProcessingDock";
+
+import {
   Activity,
   BrainCircuit,
   FileStack,
@@ -139,6 +143,7 @@ export function AppLayout() {
 
       <main className="main-panel">
         <Outlet />
+          <GlobalProcessingDock />
       </main>
     </div>
   );

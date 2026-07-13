@@ -10,17 +10,8 @@ import {
 } from "lucide-react";
 
 import {
-  useEffect,
-  useState,
-} from "react";
-
-import {
-  useWorkspaceProcessingStream,
-} from "../hooks/useWorkspaceProcessingStream";
-
-import {
-  getActiveWorkspaceId,
-} from "../lib/workspace";
+  useWorkspaceProcessing,
+} from "../contexts/WorkspaceProcessingContext";
 
 import type {
   WorkspaceProcessingDocument,
@@ -122,45 +113,12 @@ function ProcessingDocumentCard({
 
 
 export function ProcessingPage() {
-  const [
-    workspaceId,
-    setWorkspaceId,
-  ] = useState<string | null>(
-    getActiveWorkspaceId(),
-  );
-
   const {
+    workspaceId,
     snapshot,
     connected,
     error,
-  } = useWorkspaceProcessingStream(
-    workspaceId,
-  );
-
-  useEffect(() => {
-    function handleWorkspaceChange(
-      event: Event,
-    ) {
-      const workspaceEvent =
-        event as CustomEvent<string>;
-
-      setWorkspaceId(
-        workspaceEvent.detail ??
-          getActiveWorkspaceId(),
-      );
-    }
-
-    window.addEventListener(
-      "decision-memory-workspace-change",
-      handleWorkspaceChange,
-    );
-
-    return () =>
-      window.removeEventListener(
-        "decision-memory-workspace-change",
-        handleWorkspaceChange,
-      );
-  }, []);
+  } = useWorkspaceProcessing();
 
   if (!workspaceId) {
     return (
