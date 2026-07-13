@@ -22,8 +22,10 @@ import {
 
 import type { Workspace } from "../types/api";
 
-const WORKSPACE_KEY =
-  "decision_memory_workspace";
+import {
+  ACTIVE_WORKSPACE_KEY,
+  setActiveWorkspaceId,
+} from "../lib/workspace";
 
 export function DashboardPage() {
   const [workspaces, setWorkspaces] =
@@ -31,7 +33,7 @@ export function DashboardPage() {
 
   const [selectedWorkspace, setSelectedWorkspace] =
     useState<string | null>(
-      localStorage.getItem(WORKSPACE_KEY),
+      localStorage.getItem(ACTIVE_WORKSPACE_KEY),
     );
 
   const [newWorkspaceName, setNewWorkspaceName] =
@@ -68,7 +70,7 @@ export function DashboardPage() {
 
   function selectWorkspace(id: string) {
     setSelectedWorkspace(id);
-    localStorage.setItem(WORKSPACE_KEY, id);
+    setActiveWorkspaceId(id);
   }
 
   async function handleCreateWorkspace(

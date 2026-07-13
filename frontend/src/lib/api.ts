@@ -1,6 +1,11 @@
 import type {
   ApiError,
   AuthResponse,
+  DecisionExtractionResponse,
+  DocumentDetail,
+  DocumentRecord,
+  DocumentRetryResponse,
+  DocumentUploadResponse,
   User,
   Workspace,
   WorkspaceCreateRequest,
@@ -117,4 +122,74 @@ export function createWorkspace(
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+
+export function getDocuments(
+  workspaceId: string,
+): Promise<DocumentRecord[]> {
+  return request<DocumentRecord[]>(
+    `/workspaces/${workspaceId}/documents`,
+  );
+}
+
+export function getDocument(
+  workspaceId: string,
+  documentId: string,
+): Promise<DocumentDetail> {
+  return request<DocumentDetail>(
+    `/workspaces/${workspaceId}/documents/${documentId}`,
+  );
+}
+
+export function uploadDocument(
+  workspaceId: string,
+  file: File,
+): Promise<DocumentUploadResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return request<DocumentUploadResponse>(
+    `/workspaces/${workspaceId}/documents`,
+    {
+      method: "POST",
+      body: formData,
+    },
+  );
+}
+
+export function retryDocument(
+  workspaceId: string,
+  documentId: string,
+): Promise<DocumentRetryResponse> {
+  return request<DocumentRetryResponse>(
+    `/workspaces/${workspaceId}/documents/${documentId}/retry`,
+    {
+      method: "POST",
+    },
+  );
+}
+
+export function deleteDocument(
+  workspaceId: string,
+  documentId: string,
+): Promise<void> {
+  return request<void>(
+    `/workspaces/${workspaceId}/documents/${documentId}`,
+    {
+      method: "DELETE",
+    },
+  );
+}
+
+export function extractDocumentDecisions(
+  workspaceId: string,
+  documentId: string,
+): Promise<DecisionExtractionResponse> {
+  return request<DecisionExtractionResponse>(
+    `/workspaces/${workspaceId}/documents/${documentId}/extract-decisions`,
+    {
+      method: "POST",
+    },
+  );
 }

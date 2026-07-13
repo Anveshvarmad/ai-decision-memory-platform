@@ -15,6 +15,10 @@ import {
 
 import type { User } from "../types/api";
 
+import {
+  ACTIVE_WORKSPACE_KEY,
+} from "../lib/workspace";
+
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
@@ -103,7 +107,7 @@ export function AuthProvider({
   function logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(
-      "decision_memory_workspace",
+      ACTIVE_WORKSPACE_KEY,
     );
 
     setUser(null);

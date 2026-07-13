@@ -7,6 +7,7 @@ import {
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AppLayout } from "./layouts/AppLayout";
 import { DashboardPage } from "./pages/DashboardPage";
+import { DocumentsPage } from "./pages/DocumentsPage";
 import { LoginPage } from "./pages/LoginPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 
@@ -30,12 +31,7 @@ export default function App() {
 
           <Route
             path="documents"
-            element={
-              <PlaceholderPage
-                title="Documents"
-                description="Upload, process, inspect, and re-index organizational source files."
-              />
-            }
+            element={<DocumentsPage />}
           />
 
           <Route
