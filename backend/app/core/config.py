@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     ollama_chat_model: str = "llama3.2:3b"
     ollama_embedding_model: str = "nomic-embed-text"
 
+    jwt_secret_key: str = "change-this-secret-key"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60
+
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=False,
