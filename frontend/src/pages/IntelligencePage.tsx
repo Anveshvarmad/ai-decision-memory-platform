@@ -36,10 +36,8 @@ import {
 } from "../lib/workspace";
 
 import type {
-  ClaimCitationGroup,
   DecisionReasoningResponse,
   ReasoningCitation,
-  ReasoningClaim,
 } from "../types/api";
 
 function formatDate(
@@ -69,74 +67,37 @@ function formatConfidence(
   return `${Math.round(value * 100)}%`;
 }
 
-function ClaimItem({
-  claim,
-  citationGroup,
+function InformationList({
+  items,
+  emptyMessage,
   icon,
 }: {
-  claim: ReasoningClaim;
-  citationGroup?: ClaimCitationGroup;
+  items: string[];
+  emptyMessage: string;
   icon: React.ReactNode;
 }) {
-  const [expanded, setExpanded] =
-    useState(false);
-
-  const citations =
-    citationGroup?.citations ?? [];
+  if (items.length === 0) {
+    return (
+      <div className="intelligence-empty-list">
+        {emptyMessage}
+      </div>
+    );
+  }
 
   return (
-    <article
-      className={
-        claim.supported
-          ? "claim-item supported"
-          : "claim-item unsupported"
-      }
-    >
-      <div className="claim-item-main">
-        <span className="claim-item-icon">
-          {icon}
-        </span>
-
-        <p>{claim.text}</p>
-
-        <button
-          type="button"
-          disabled={citations.length === 0}
-          onClick={() =>
-            setExpanded((current) => !current)
-          }
+    <div className="intelligence-list">
+      {items.map((item, index) => (
+        <div
+          key={`${item}-${index}`}
+          className="intelligence-list-item"
         >
-          {claim.supported
-            ? `${citations.length} source${
-                citations.length === 1
-                  ? ""
-                  : "s"
-              }`
-            : "Unsupported"}
-
-          {citations.length > 0 &&
-            (expanded ? (
-              <ChevronDown size={14} />
-            ) : (
-              <ChevronRight size={14} />
-            ))}
-        </button>
-      </div>
-
-      {expanded && citations.length > 0 && (
-        <div className="claim-citation-list">
-          {citations.map((citation) => (
-            <CitationCard
-              key={citation.source_id}
-              citation={citation}
-            />
-          ))}
+          <span>{icon}</span>
+          <p>{item}</p>
         </div>
-      )}
-    </article>
+      ))}
+    </div>
   );
 }
-
 
 function CitationCard({
   citation,
@@ -293,17 +254,6 @@ export function IntelligencePage() {
   }
 
   const result = response?.result;
-
-  function findClaimCitation(
-    claimType: string,
-    claimIndex: number,
-  ) {
-    return response?.claim_citations.find(
-      (group) =>
-        group.claim_type === claimType &&
-        group.claim_index === claimIndex,
-    );
-  }
 
   const sourceCount = useMemo(
     () => response?.citations.length ?? 0,
@@ -495,22 +445,6 @@ export function IntelligencePage() {
                   <CheckCircle2 size={13} />
                   {sourceCount} citations
                 </span>
-
-                <span
-                  className={
-                    response.citation_coverage
-                      .coverage_ratio >= 0.8
-                      ? "metadata-badge green"
-                      : "metadata-badge red"
-                  }
-                >
-                  <ShieldAlert size={13} />
-                  {Math.round(
-                    response.citation_coverage
-                      .coverage_ratio * 100,
-                  )}
-                  % claim coverage
-                </span>
               </div>
 
               <h2>
@@ -609,29 +543,13 @@ export function IntelligencePage() {
                 </div>
               </div>
 
-              {result.reason_claims.length === 0 ? (
-                <div className="intelligence-empty-list">
-                  No explicit reasons were found.
-                </div>
-              ) : (
-                <div className="claim-list">
-                  {result.reason_claims.map(
-                    (claim, index) => (
-                      <ClaimItem
-                        key={`${claim.text}-${index}`}
-                        claim={claim}
-                        citationGroup={findClaimCitation(
-                          "reason",
-                          index,
-                        )}
-                        icon={
-                          <ArrowRight size={14} />
-                        }
-                      />
-                    ),
-                  )}
-                </div>
-              )}
+              <InformationList
+                items={result.reasons}
+                emptyMessage="No explicit reasons were found."
+                icon={
+                  <ArrowRight size={14} />
+                }
+              />
             </article>
 
             <article className="intelligence-section-card">
@@ -648,29 +566,13 @@ export function IntelligencePage() {
                 </div>
               </div>
 
-              {result.alternative_claims.length === 0 ? (
-                <div className="intelligence-empty-list">
-                  No alternatives were documented.
-                </div>
-              ) : (
-                <div className="claim-list">
-                  {result.alternative_claims.map(
-                    (claim, index) => (
-                      <ClaimItem
-                        key={`${claim.text}-${index}`}
-                        claim={claim}
-                        citationGroup={findClaimCitation(
-                          "alternative",
-                          index,
-                        )}
-                        icon={
-                          <GitBranch size={14} />
-                        }
-                      />
-                    ),
-                  )}
-                </div>
-              )}
+              <InformationList
+                items={result.alternatives}
+                emptyMessage="No alternatives were documented."
+                icon={
+                  <GitBranch size={14} />
+                }
+              />
             </article>
 
             <article className="intelligence-section-card">
@@ -687,29 +589,13 @@ export function IntelligencePage() {
                 </div>
               </div>
 
-              {result.stakeholder_claims.length === 0 ? (
-                <div className="intelligence-empty-list">
-                  No stakeholders were explicitly documented.
-                </div>
-              ) : (
-                <div className="claim-list">
-                  {result.stakeholder_claims.map(
-                    (claim, index) => (
-                      <ClaimItem
-                        key={`${claim.text}-${index}`}
-                        claim={claim}
-                        citationGroup={findClaimCitation(
-                          "stakeholder",
-                          index,
-                        )}
-                        icon={
-                          <UserRound size={14} />
-                        }
-                      />
-                    ),
-                  )}
-                </div>
-              )}
+              <InformationList
+                items={result.stakeholders}
+                emptyMessage="No stakeholders were explicitly documented."
+                icon={
+                  <UserRound size={14} />
+                }
+              />
             </article>
 
             <article className="intelligence-section-card">
@@ -726,29 +612,13 @@ export function IntelligencePage() {
                 </div>
               </div>
 
-              {result.risk_claims.length === 0 ? (
-                <div className="intelligence-empty-list">
-                  No explicit risks were found.
-                </div>
-              ) : (
-                <div className="claim-list">
-                  {result.risk_claims.map(
-                    (claim, index) => (
-                      <ClaimItem
-                        key={`${claim.text}-${index}`}
-                        claim={claim}
-                        citationGroup={findClaimCitation(
-                          "risk",
-                          index,
-                        )}
-                        icon={
-                          <ShieldAlert size={14} />
-                        }
-                      />
-                    ),
-                  )}
-                </div>
-              )}
+              <InformationList
+                items={result.risks}
+                emptyMessage="No explicit risks were found."
+                icon={
+                  <ShieldAlert size={14} />
+                }
+              />
             </article>
           </section>
 
@@ -766,27 +636,11 @@ export function IntelligencePage() {
               </div>
             </div>
 
-            {result.impact_claims.length === 0 ? (
-              <div className="intelligence-empty-list">
-                No impacts were explicitly documented.
-              </div>
-            ) : (
-              <div className="claim-list">
-                {result.impact_claims.map(
-                  (claim, index) => (
-                    <ClaimItem
-                      key={`${claim.text}-${index}`}
-                      claim={claim}
-                      citationGroup={findClaimCitation(
-                        "impact",
-                        index,
-                      )}
-                      icon={<Zap size={14} />}
-                    />
-                  ),
-                )}
-              </div>
-            )}
+            <InformationList
+              items={result.impacts}
+              emptyMessage="No impacts were explicitly documented."
+              icon={<Zap size={14} />}
+            />
           </section>
 
           <section className="intelligence-section-card intelligence-full-width">

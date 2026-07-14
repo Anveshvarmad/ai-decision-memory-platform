@@ -1,6 +1,6 @@
 import {
   GlobalProcessingDock,
-} from "../components/GlobalProcessingDock";
+  } from "../components/GlobalProcessingDock";
 
 import {
   Activity,
@@ -39,6 +39,11 @@ const navigation = [
     path: "/app/chat",
     label: "Decision Chat",
     icon: MessageSquareText,
+  },
+  {
+    path: "/app/intelligence",
+    label: "Intelligence",
+    icon: Sparkles,
   },
   {
     path: "/app/intelligence",

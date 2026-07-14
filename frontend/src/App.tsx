@@ -58,6 +58,11 @@ export default function App() {
           />
 
           <Route
+            path="intelligence"
+            element={<IntelligencePage />}
+          />
+
+          <Route
             path="comparison"
             element={<ComparisonPage />}
           />

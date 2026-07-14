@@ -464,3 +464,147 @@ export interface WorkspaceProcessingEvent {
   failed_count: number;
   timestamp: string;
 }
+
+export interface ReasoningCitation {
+  citation_number: number;
+  source_id: string;
+  source_type: string;
+  title: string;
+  document_id: string | null;
+  chunk_id: string | null;
+  decision_id: string | null;
+  document_name: string | null;
+  page_number: number | null;
+  section_title: string | null;
+  excerpt: string;
+  score: number;
+}
+
+export interface ReasoningTimelineItem {
+  date: string | null;
+  title: string;
+  description: string | null;
+  source_ids: string[];
+}
+
+export interface RelatedDecisionItem {
+  decision_id: string | null;
+  title: string;
+  relationship: string | null;
+  status: string | null;
+  source_ids: string[];
+}
+
+export interface DecisionReasoningResult {
+  answer: string;
+  summary: string;
+  decision_title: string | null;
+  decision_status: string | null;
+  decision_date: string | null;
+  confidence: number;
+  reasons: string[];
+  alternatives: string[];
+  stakeholders: string[];
+  risks: string[];
+  impacts: string[];
+  timeline: ReasoningTimelineItem[];
+  related_decisions: RelatedDecisionItem[];
+  uncertainties: string[];
+  source_ids: string[];
+}
+
+export interface DecisionReasoningRequest {
+  query: string;
+  decision_limit?: number;
+  document_limit?: number;
+  timeline_limit?: number;
+  graph_neighbor_limit?: number;
+  minimum_similarity?: number;
+  token_budget?: number;
+  maximum_items?: number;
+  deduplication_threshold?: number;
+  include_raw_context?: boolean;
+}
+
+export interface DecisionReasoningResponse {
+  query: string;
+  query_type: string;
+  result: DecisionReasoningResult;
+  citations: ReasoningCitation[];
+  selected_context_items: number;
+  estimated_context_tokens: number;
+  model: string;
+  raw_context: unknown[] | null;
+}
+
+export interface ReasoningCitation {
+  citation_number: number;
+  source_id: string;
+  source_type: string;
+  title: string;
+  document_id: string | null;
+  chunk_id: string | null;
+  decision_id: string | null;
+  document_name: string | null;
+  page_number: number | null;
+  section_title: string | null;
+  excerpt: string;
+  score: number;
+}
+
+export interface ReasoningTimelineItem {
+  date: string | null;
+  title: string;
+  description: string | null;
+  source_ids: string[];
+}
+
+export interface RelatedDecisionItem {
+  decision_id: string | null;
+  title: string;
+  relationship: string | null;
+  status: string | null;
+  source_ids: string[];
+}
+
+export interface DecisionReasoningResult {
+  answer: string;
+  summary: string;
+  decision_title: string | null;
+  decision_status: string | null;
+  decision_date: string | null;
+  confidence: number;
+  reasons: string[];
+  alternatives: string[];
+  stakeholders: string[];
+  risks: string[];
+  impacts: string[];
+  timeline: ReasoningTimelineItem[];
+  related_decisions: RelatedDecisionItem[];
+  uncertainties: string[];
+  source_ids: string[];
+}
+
+export interface DecisionReasoningRequest {
+  query: string;
+  decision_limit?: number;
+  document_limit?: number;
+  timeline_limit?: number;
+  graph_neighbor_limit?: number;
+  minimum_similarity?: number;
+  token_budget?: number;
+  maximum_items?: number;
+  deduplication_threshold?: number;
+  include_raw_context?: boolean;
+}
+
+export interface DecisionReasoningResponse {
+  query: string;
+  query_type: string;
+  result: DecisionReasoningResult;
+  citations: ReasoningCitation[];
+  selected_context_items: number;
+  estimated_context_tokens: number;
+  model: string;
+  raw_context: unknown[] | null;
+}
