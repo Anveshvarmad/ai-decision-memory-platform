@@ -15,7 +15,7 @@ import {
   Navigate,
   useLocation,
   useNavigate,
-} from "react-router";
+} from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 

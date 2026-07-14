@@ -1,0 +1,80 @@
+export default function App() {
+  return (
+    <main
+      style={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        padding: "32px",
+        background: "#0b0e17",
+        color: "#ffffff",
+        fontFamily:
+          "Arial, Helvetica, sans-serif",
+      }}
+    >
+      <section
+        style={{
+          width: "min(620px, 100%)",
+          padding: "36px",
+          border:
+            "2px solid #8b7def",
+          borderRadius: "18px",
+          background: "#151925",
+          boxShadow:
+            "0 20px 60px rgba(0,0,0,0.45)",
+        }}
+      >
+        <div
+          style={{
+            display: "inline-block",
+            marginBottom: "18px",
+            padding: "7px 11px",
+            borderRadius: "999px",
+            background:
+              "rgba(74, 190, 128, 0.15)",
+            color: "#75d6a4",
+            fontSize: "13px",
+            fontWeight: 700,
+          }}
+        >
+          React runtime working
+        </div>
+
+        <h1
+          style={{
+            margin: "0 0 14px",
+            fontSize: "34px",
+          }}
+        >
+          Decision Memory Frontend
+        </h1>
+
+        <p
+          style={{
+            margin: 0,
+            color: "#b6bdce",
+            fontSize: "16px",
+            lineHeight: 1.7,
+          }}
+        >
+          The Vite server, React runtime,
+          JavaScript bundle, DOM mount, and
+          frontend container are working.
+        </p>
+
+        <p
+          style={{
+            margin: "18px 0 0",
+            color: "#8e96aa",
+            lineHeight: 1.6,
+          }}
+        >
+          When this page appears, the original
+          black screen is caused by AppLayout,
+          routing, authentication, or one of the
+          global providers—not by Docker or Vite.
+        </p>
+      </section>
+    </main>
+  );
+}

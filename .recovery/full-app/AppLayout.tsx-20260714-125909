@@ -1,3 +1,6 @@
+import {
+  GlobalProcessingDock,
+  } from "../components/GlobalProcessingDock";
 
 import {
   Activity,
@@ -16,7 +19,7 @@ import {
 import {
   NavLink,
   Outlet,
-} from "react-router-dom";
+} from "react-router";
 
 import { useAuth } from "../context/AuthContext";
 
@@ -145,7 +148,7 @@ export function AppLayout() {
 
       <main className="main-panel">
         <Outlet />
-          
+          <GlobalProcessingDock />
       </main>
     </div>
   );

@@ -9,24 +9,28 @@ import {
 } from "./layouts/AppLayout";
 
 import {
-  LoginPage,
-} from "./pages/LoginPage";
-
-import {
-  DashboardPage,
-} from "./pages/DashboardPage";
-
-import {
-  DocumentsPage,
-} from "./pages/DocumentsPage";
+  WorkspaceProcessingProvider,
+} from "./contexts/WorkspaceProcessingContext";
 
 import {
   ChatPage,
 } from "./pages/ChatPage";
 
 import {
+  ComparisonPage,
+} from "./pages/ComparisonPage";
+
+import {
+  DashboardPage,
+} from "./pages/DashboardPage";
+
+import {
   DecisionsPage,
 } from "./pages/DecisionsPage";
+
+import {
+  DocumentsPage,
+} from "./pages/DocumentsPage";
 
 import {
   GraphPage,
@@ -37,18 +41,26 @@ import {
 } from "./pages/IntelligencePage";
 
 import {
-  ComparisonPage,
-} from "./pages/ComparisonPage";
+  LoginPage,
+} from "./pages/LoginPage";
+
 
 import {
   ProcessingPage,
 } from "./pages/ProcessingPage";
 
+function ApplicationShell() {
+  return (
+    <WorkspaceProcessingProvider>
+      <AppLayout />
+    </WorkspaceProcessingProvider>
+  );
+}
+
 
 export default function App() {
   return (
     <Routes>
-
       <Route
         path="/login"
         element={<LoginPage />}
@@ -56,7 +68,7 @@ export default function App() {
 
       <Route
         path="/app"
-        element={<AppLayout />}
+        element={<ApplicationShell />}
       >
         <Route
           index
@@ -108,11 +120,12 @@ export default function App() {
           element={<ProcessingPage />}
         />
 
+
         <Route
           path="*"
           element={
             <Navigate
-              to="dashboard"
+              to="/app/dashboard"
               replace
             />
           }
