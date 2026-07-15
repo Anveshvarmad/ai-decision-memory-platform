@@ -44,11 +44,14 @@ import {
   ProcessingPage,
 } from "./pages/ProcessingPage";
 
+import {
+  DecisionHealthPage,
+} from "./pages/DecisionHealthPage";
+
 
 export default function App() {
   return (
     <Routes>
-
       <Route
         path="/login"
         element={<LoginPage />}
@@ -106,6 +109,11 @@ export default function App() {
         <Route
           path="processing"
           element={<ProcessingPage />}
+        />
+
+        <Route
+          path="decision-health"
+          element={<DecisionHealthPage />}
         />
 
         <Route

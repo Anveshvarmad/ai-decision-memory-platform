@@ -17,6 +17,7 @@ import {
 } from "./context/AuthContext";
 
 import "./index.css";
+import "./styles/section-system.css";
 
 
 const rootElement =
