@@ -38,3 +38,6 @@ aggregated-context.json
 
 # Ranked context test output
 ranked-context.json
+.recovery/
+scripts/install-phase-17b.py
+scripts/install-phase-17b-standalone.py

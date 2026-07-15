@@ -13,6 +13,7 @@ from app.api.search import router as search_router
 from app.api.timelines import router as timeline_router
 from app.api.workspaces import router as workspace_router
 from app.core.config import get_settings
+from app.api import decision_health
 
 
 settings = get_settings()
@@ -35,6 +36,7 @@ app.add_middleware(
 )
 
 app.include_router(health_router, prefix="/api")
+app.include_router(decision_health.router, prefix='/api')
 app.include_router(auth_router, prefix="/api")
 app.include_router(workspace_router, prefix="/api")
 app.include_router(document_router, prefix="/api")
